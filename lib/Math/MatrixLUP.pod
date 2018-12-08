@@ -21,14 +21,14 @@ Version 0.01
 
     my $LUP = Math::MatrixLUP->new($A);
 
-    my $det = $LUP->determinant;                 # 684
-    my $sol = $LUP->solve([-3, -32, -47, 49]);   # [2, -12, -4, 1]
+    my $det = $LUP->determinant;
+    my $sol = $LUP->solve([-3, -32, -47, 49]);
     my $inv = $LUP->invert;
     my $exp = $LUP->pow(3);
 
 =head1 DESCRIPTION
 
-B<Math::MatrixLUP> provides generic support for matrix operations and LUP decomposition, allowing any type of numbers inside the matrix, including L<Math::AnyNum> objects.
+Math::MatrixLUP provides generic support for matrix operations and LUP decomposition, allowing any type of numbers inside the matrix, including native Perl numbers and numerical objects provided by other mathematical libraries, such as L<Math::AnyNum>.
 
 The supported matrix operations are:
 

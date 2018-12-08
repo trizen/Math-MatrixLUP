@@ -4,16 +4,16 @@ Math::MatrixLUP - Matrix operations and LUP decomposition.
 
 ## DESCRIPTION
 
-**Math::MatrixLUP** provides generic support for matrix operations and LUP decomposition, allowing any type of numbers inside the matrix, including [Math::AnyNum](https://metacpan.org/pod/Math::AnyNum) objects.
+Math::MatrixLUP provides generic support for matrix operations and LUP decomposition, allowing any type of numbers inside the matrix, including native Perl numbers and numerical objects provided by other mathematical libraries, such as L<Math::AnyNum>.
 
 The supported matrix operations are:
 
-    * matrix-scalar arithmetical operation
-    * matrix multiplication
-    * matrix exponentiation
-    * computing the determinant of a square-matrix
-    * inverting a square-matrix
-    * solving a system of linear equations
+* matrix multiplication
+* matrix exponentiation
+* matrix-scalar arithmetical operations
+* determinant of a square-matrix
+* inversion of a square-matrix
+* solving a system of linear equations
 
 ## SYNOPSIS
 
@@ -29,8 +29,8 @@ my $A = [
 
 my $LUP = Math::MatrixLUP->new($A);
 
-my $det = $LUP->determinant;                 # 684
-my $sol = $LUP->solve([-3, -32, -47, 49]);   # [2, -12, -4, 1]
+my $det = $LUP->determinant;
+my $sol = $LUP->solve([-3, -32, -47, 49]);
 my $inv = $LUP->invert;
 my $exp = $LUP->pow(3);
 ```

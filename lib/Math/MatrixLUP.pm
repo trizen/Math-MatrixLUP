@@ -28,6 +28,27 @@ sub new {
     bless {A => $matrix}, $class;
 }
 
+sub identity {
+    my ($n) = @_;
+
+    $n -= 1;
+
+    if ($n < 0) {
+        return __PACKAGE__->new([[]]);
+    }
+
+    __PACKAGE__->new(
+        [
+         map {
+             my $i = $_;
+             [map { ($i == $_) ? 1 : 0 } 0 .. $n]
+           } 0 .. $n
+        ]
+    );
+}
+
+*I = \&identity;
+
 sub _LUP_decomposition {
     my ($self) = @_;
 
@@ -329,9 +350,9 @@ sub mod {
             return $A->scalar_mod($B);
         }
 
-        # A - B*floor(A/B)
+        # A - B*floor(A/B) = A - B*floor(A * B^(-1))
         if ($r2 eq __PACKAGE__) {
-            return Math::MatrixLUP::sub($A, $B->mul($B->map(sub { $A / $_ })->floor));
+            return Math::MatrixLUP::sub($A, $B->mul($B->inv->scalar_mul($A)->floor));
         }
     }
 
@@ -343,21 +364,10 @@ sub pow {
     my ($A, $pow) = @_;
 
     $pow = CORE::int($pow);
+    my $neg = ($pow < 0);
+    $pow = CORE::int(CORE::abs($pow));
 
-    my $neg = 0;
-
-    if ($pow < 0) {
-        $neg = 1;
-        $pow = -$pow;
-    }
-
-#<<<
-        my $n = $#{$A->{A}};
-        my $B = __PACKAGE__->new([map {
-            my $i = $_;
-            [map { ($i == $_) ? 1 : 0 } 0 .. $n]
-        } 0 .. $n]);
-#>>>
+    my $B = Math::MatrixLUP::identity(scalar @{$A->{A}});
 
     return $B if ($pow == 0);
 
