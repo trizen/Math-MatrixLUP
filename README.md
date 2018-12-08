@@ -1,4 +1,4 @@
-# Math::MathLUP
+# Math::MatrixLUP
 
 Math::MatrixLUP - Matrix operations and LUP decomposition.
 
