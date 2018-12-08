@@ -295,8 +295,19 @@ sub mul {
 sub div {
     my ($m1, $m2) = @_;
 
-    if (ref($m2) ne ref($m1)) {
-        return $m1->scalar_div($m2);
+    my $r1 = ref($m1);
+    my $r2 = ref($m2);
+
+    if ($r1 ne $r2) {
+
+        if ($r1 eq __PACKAGE__) {
+            return $m1->scalar_div($m2);
+        }
+
+        # A/B = A * B^(-1)
+        if ($r2 eq __PACKAGE__) {
+            return $m2->inv->scalar_mul($m1);
+        }
     }
 
     $m1->mul($m2->inv);
