@@ -31,6 +31,12 @@ use overload
   '%'  => sub { @_ = $_[2] ? @_[1, 0] : @_[0, 1]; goto &mod },
   ;
 
+sub _croak {
+    my ($msg) = @_;
+    require Carp;
+    Carp::croak($msg);
+}
+
 sub new {
     my ($class, $matrix) = @_;
 
@@ -47,12 +53,6 @@ sub new {
     $obj;
 }
 
-sub _croak {
-    my ($msg) = @_;
-    require Carp;
-    Carp::croak($msg);
-}
-
 sub identity {
     my $n = $_[-1];
 
@@ -60,17 +60,76 @@ sub identity {
         return __PACKAGE__->new([[]]);
     }
 
-    __PACKAGE__->new(
-        [
-         map {
-             my $i = $_;
-             [map { ($i == $_) ? 1 : 0 } 1 .. $n]
-           } 1 .. $n
-        ]
-    );
+    __PACKAGE__->new([map { [(0) x ($_ - 1), 1, (0) x ($n - $_)] } 1 .. $n]);
 }
 
 *I = \&identity;
+
+sub zero {
+    my (undef, $row_count, $col_count) = @_;
+
+    $col_count //= $row_count;
+
+    if ($row_count <= 0) {
+        return __PACKAGE__->new([[]]);
+    }
+
+    __PACKAGE__->new([map { [(0) x $col_count] } 1 .. $row_count]);
+}
+
+*I = \&identity;
+
+sub column_vector {
+    my (undef, $vector) = @_;
+
+    ref($vector) eq 'ARRAY'
+      or _croak("column_vector(): the vector must be an ARRAY ref");
+
+    __PACKAGE__->new([map { [$_] } @$vector]);
+}
+
+sub row_vector {
+    my (undef, $vector) = @_;
+
+    ref($vector) eq 'ARRAY'
+      or _croak("row_vector(): the vector must be an ARRAY ref");
+
+    __PACKAGE__->new([$vector]);
+}
+
+sub diagonal {
+    my (undef, $vector) = @_;
+
+    ref($vector) eq 'ARRAY'
+      or _croak("diagonal(): the vector must be an ARRAY ref");
+
+    my @diag = @$vector;
+    my $n    = scalar(@diag);
+
+    __PACKAGE__->new([map { [(0) x ($_ - 1), shift(@diag), (0) x ($n - $_)] } 1 .. $n]);
+}
+
+sub scalar {
+    my (undef, $n, $value) = @_;
+    __PACKAGE__->new([map { [(0) x ($_ - 1), $value, (0) x ($n - $_)] } 1 .. $n]);
+}
+
+sub size {
+    my ($self) = @_;
+    ($self->{rows}, $self->{cols});
+}
+
+sub get_rows {
+    my ($self) = @_;
+    @{$self->{A}};
+}
+
+sub get_columns {
+    my ($self) = @_;
+    $self->transpose->get_rows;
+}
+
+*cols = \&columns;
 
 sub _LUP_decomposition {
     my ($self) = @_;
@@ -128,19 +187,19 @@ sub clone {
     __PACKAGE__->new([map { [@$_] } @{$self->{A}}]);
 }
 
-sub diagonal_vector {
+sub get_diagonal {
     my ($self) = @_;
 
-    $self->{is_square} or _croak('diagonal_vector(): not a square matrix');
+    $self->{is_square} or _croak('get_diagonal(): not a square matrix');
 
     my $A = $self->{A};
     [map { $A->[$_][$_] } 0 .. $self->{rows}];
 }
 
-sub anti_diagonal_vector {
+sub get_anti_diagonal {
     my ($self) = @_;
 
-    $self->{is_square} or _croak('anti_diagonal_vector(): not a square matrix');
+    $self->{is_square} or _croak('get_anti_diagonal(): not a square matrix');
 
     my $A    = $self->{A};
     my $cols = $self->{cols};

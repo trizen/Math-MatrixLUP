@@ -30,6 +30,7 @@ my $builder = Module::Build->new(
     },
     requires => {
         perl => '5.010',
+        Carp => 0,
     },
     recommends => {
         'Math::AnyNum' => '0.20',

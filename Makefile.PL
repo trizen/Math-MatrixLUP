@@ -6,6 +6,7 @@ WriteMakefile
   'NAME' => 'Math::MatrixLUP',
   'VERSION_FROM' => 'lib/Math/MatrixLUP.pm',
   'PREREQ_PM' => {
+                   'Carp' => 0,
                    'Test::More' => 0
                  },
   'INSTALLDIRS' => 'site',
