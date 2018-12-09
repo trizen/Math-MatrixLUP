@@ -19,7 +19,7 @@ my $A = Math::MatrixLUP->new([
 
 my $solution = $A->solve([-3, -32, -47, 49]);
 
-say "Determiannt: ", $A->det;
+say "Determinant: ", $A->det;
 say "Solution: [", join(', ', @$solution), "]\n";
 say $A * Math::MatrixLUP->column_vector($solution);
 
@@ -27,7 +27,7 @@ print "\nA^(-1) = ";
 say $A->inv;
 
 __END__
-Determiannt: 684
+Determinant: 684
 Solution: [2, -12, -4, 1]
 
 [
