@@ -13,6 +13,14 @@ use overload
   '==' => \&eq,
   '!=' => \&ne,
 
+  '&' => \&and,
+  '|' => \&or,
+  '^' => \&xor,
+  '~' => \&transpose,
+
+  '>>' => \&rsft,
+  '<<' => \&lsft,
+
   '+' => \&add,
   '*' => \&mul,
 
@@ -25,15 +33,30 @@ use overload
 
 sub new {
     my ($class, $matrix) = @_;
-    bless {A => $matrix}, $class;
+
+    (ref($matrix) eq 'ARRAY' and ref($matrix->[0]) eq 'ARRAY')
+      or _croak("Math::MatrixLUP->new(): invalid argument (expected a 2D array)");
+
+    my $obj = bless {
+                     A    => $matrix,
+                     rows => $#{$matrix},
+                     cols => $#{$matrix->[0]},
+                    }, $class;
+
+    $obj->{is_square} = ($obj->{rows} == $obj->{cols});
+    $obj;
+}
+
+sub _croak {
+    my ($msg) = @_;
+    require Carp;
+    Carp::croak($msg);
 }
 
 sub identity {
-    my ($n) = @_;
+    my $n = $_[-1];
 
-    $n -= 1;
-
-    if ($n < 0) {
+    if ($n <= 0) {
         return __PACKAGE__->new([[]]);
     }
 
@@ -41,8 +64,8 @@ sub identity {
         [
          map {
              my $i = $_;
-             [map { ($i == $_) ? 1 : 0 } 0 .. $n]
-           } 0 .. $n
+             [map { ($i == $_) ? 1 : 0 } 1 .. $n]
+           } 1 .. $n
         ]
     );
 }
@@ -53,7 +76,7 @@ sub _LUP_decomposition {
     my ($self) = @_;
 
     my @A = map { [@$_] } @{$self->{A}};
-    my $N = $#A;
+    my $N = $self->{rows};
     my @P = (0 .. $N + 1);
 
     foreach my $i (0 .. $N) {
@@ -105,13 +128,33 @@ sub clone {
     __PACKAGE__->new([map { [@$_] } @{$self->{A}}]);
 }
 
+sub diagonal_vector {
+    my ($self) = @_;
+
+    $self->{is_square} or _croak('diagonal_vector(): not a square matrix');
+
+    my $A = $self->{A};
+    [map { $A->[$_][$_] } 0 .. $self->{rows}];
+}
+
+sub anti_diagonal_vector {
+    my ($self) = @_;
+
+    $self->{is_square} or _croak('anti_diagonal_vector(): not a square matrix');
+
+    my $A    = $self->{A};
+    my $cols = $self->{cols};
+
+    [map { $A->[$_][$cols - $_] } 0 .. $self->{rows}];
+}
+
 sub transpose {
     my ($self) = @_;
 
     my $A = $self->{A};
 
-    my $rows = $#{$A};
-    my $cols = $#{$A->[0]};
+    my $rows = $self->{rows};
+    my $cols = $self->{cols};
 
     __PACKAGE__->new(
         [
@@ -121,6 +164,24 @@ sub transpose {
            } 0 .. $cols
         ]
     );
+}
+
+sub horizontal_flip {
+    my ($self) = @_;
+
+    __PACKAGE__->new([map { [reverse(@$_)] } @{$self->{A}}]);
+}
+
+sub vertical_flip {
+    my ($self) = @_;
+
+    __PACKAGE__->new([reverse @{$self->{A}}]);
+}
+
+sub flip {
+    my ($self) = @_;
+
+    __PACKAGE__->new([reverse map { [reverse(@$_)] } @{$self->{A}}]);
 }
 
 sub scalar_mul {
@@ -178,6 +239,61 @@ sub scalar_mod {
     __PACKAGE__->new(\@B);
 }
 
+sub scalar_and {
+    my ($matrix, $scalar) = @_;
+
+    my @B;
+    foreach my $row (@{$matrix->{A}}) {
+        push @B, [map { $_ & $scalar } @$row];
+    }
+
+    __PACKAGE__->new(\@B);
+}
+
+sub scalar_or {
+    my ($matrix, $scalar) = @_;
+
+    my @B;
+    foreach my $row (@{$matrix->{A}}) {
+        push @B, [map { $_ | $scalar } @$row];
+    }
+
+    __PACKAGE__->new(\@B);
+}
+
+sub scalar_xor {
+    my ($matrix, $scalar) = @_;
+
+    my @B;
+    foreach my $row (@{$matrix->{A}}) {
+        push @B, [map { $_ ^ $scalar } @$row];
+    }
+
+    __PACKAGE__->new(\@B);
+}
+
+sub scalar_lsft {
+    my ($matrix, $scalar) = @_;
+
+    my @B;
+    foreach my $row (@{$matrix->{A}}) {
+        push @B, [map { $_ << $scalar } @$row];
+    }
+
+    __PACKAGE__->new(\@B);
+}
+
+sub scalar_rsft {
+    my ($matrix, $scalar) = @_;
+
+    my @B;
+    foreach my $row (@{$matrix->{A}}) {
+        push @B, [map { $_ >> $scalar } @$row];
+    }
+
+    __PACKAGE__->new(\@B);
+}
+
 sub neg {
     my ($matrix) = @_;
 
@@ -215,12 +331,17 @@ sub add {
     my $A = $m1->{A};
     my $B = $m2->{A};
 
-    my $rows = $#{$A};
-    my $cols = $#{$A->[0]};
+    my $rows = $m1->{rows};
+    my $cols = $m1->{cols};
+
+    ($rows == $m2->{rows} and $cols == $m2->{cols})
+      or _croak("add(): matrices of different sizes");
 
     my @C;
     foreach my $i (0 .. $rows) {
-        push @C, [map { $A->[$i][$_] + $B->[$i][$_] } 0 .. $cols];
+        my $Ai = $A->[$i];
+        my $Bi = $B->[$i];
+        push @C, [map { $Ai->[$_] + $Bi->[$_] } 0 .. $cols];
     }
 
     __PACKAGE__->new(\@C);
@@ -246,12 +367,147 @@ sub sub {
     my $A = $m1->{A};
     my $B = $m2->{A};
 
-    my $rows = $#{$A};
-    my $cols = $#{$A->[0]};
+    my $rows = $m1->{rows};
+    my $cols = $m2->{cols};
+
+    ($rows == $m2->{rows} and $cols == $m2->{cols})
+      or _croak("sub(): matrices of different sizes");
 
     my @C;
     foreach my $i (0 .. $rows) {
-        push @C, [map { $A->[$i][$_] - $B->[$i][$_] } 0 .. $cols];
+        my $Ai = $A->[$i];
+        my $Bi = $B->[$i];
+        push @C, [map { $Ai->[$_] - $Bi->[$_] } 0 .. $cols];
+    }
+
+    __PACKAGE__->new(\@C);
+}
+
+sub and {
+    my ($m1, $m2) = @_;
+
+    if (ref($m2) ne ref($m1)) {
+        return $m1->scalar_and($m2);
+    }
+
+    my $A = $m1->{A};
+    my $B = $m2->{A};
+
+    my $rows = $m1->{rows};
+    my $cols = $m2->{cols};
+
+    ($rows == $m2->{rows} and $cols == $m2->{cols})
+      or _croak("and(): matrices of different sizes");
+
+    my @C;
+    foreach my $i (0 .. $rows) {
+        my $Ai = $A->[$i];
+        my $Bi = $B->[$i];
+        push @C, [map { $Ai->[$_] & $Bi->[$_] } 0 .. $cols];
+    }
+
+    __PACKAGE__->new(\@C);
+}
+
+sub or {
+    my ($m1, $m2) = @_;
+
+    if (ref($m2) ne ref($m1)) {
+        return $m1->scalar_or($m2);
+    }
+
+    my $A = $m1->{A};
+    my $B = $m2->{A};
+
+    my $rows = $m1->{rows};
+    my $cols = $m1->{cols};
+
+    ($rows == $m2->{rows} and $cols == $m2->{cols})
+      or _croak("or(): matrices of different sizes");
+
+    my @C;
+    foreach my $i (0 .. $rows) {
+        my $Ai = $A->[$i];
+        my $Bi = $B->[$i];
+        push @C, [map { $Ai->[$_] | $Bi->[$_] } 0 .. $cols];
+    }
+
+    __PACKAGE__->new(\@C);
+}
+
+sub xor {
+    my ($m1, $m2) = @_;
+
+    if (ref($m2) ne ref($m1)) {
+        return $m1->scalar_or($m2);
+    }
+
+    my $A = $m1->{A};
+    my $B = $m2->{A};
+
+    my $rows = $m1->{rows};
+    my $cols = $m1->{cols};
+
+    ($rows == $m2->{rows} and $cols == $m2->{cols})
+      or _croak("xor(): matrices of different sizes");
+
+    my @C;
+    foreach my $i (0 .. $rows) {
+        my $Ai = $A->[$i];
+        my $Bi = $B->[$i];
+        push @C, [map { $Ai->[$_] ^ $Bi->[$_] } 0 .. $cols];
+    }
+
+    __PACKAGE__->new(\@C);
+}
+
+sub lsft {
+    my ($m1, $m2) = @_;
+
+    if (ref($m2) ne ref($m1)) {
+        return $m1->scalar_lsft($m2);
+    }
+
+    my $A = $m1->{A};
+    my $B = $m2->{A};
+
+    my $rows = $m1->{rows};
+    my $cols = $m2->{cols};
+
+    ($rows == $m2->{rows} and $cols == $m2->{cols})
+      or _croak("lsft(): matrices of different sizes");
+
+    my @C;
+    foreach my $i (0 .. $rows) {
+        my $Ai = $A->[$i];
+        my $Bi = $B->[$i];
+        push @C, [map { $Ai->[$_] << $Bi->[$_] } 0 .. $cols];
+    }
+
+    __PACKAGE__->new(\@C);
+}
+
+sub rsft {
+    my ($m1, $m2) = @_;
+
+    if (ref($m2) ne ref($m1)) {
+        return $m1->scalar_rsft($m2);
+    }
+
+    my $A = $m1->{A};
+    my $B = $m2->{A};
+
+    my $rows = $m1->{rows};
+    my $cols = $m1->{cols};
+
+    ($rows == $m2->{rows} and $cols == $m2->{cols})
+      or _croak("rsft(): matrices of different sizes");
+
+    my @C;
+    foreach my $i (0 .. $rows) {
+        my $Ai = $A->[$i];
+        my $Bi = $B->[$i];
+        push @C, [map { $Ai->[$_] >> $Bi->[$_] } 0 .. $cols];
     }
 
     __PACKAGE__->new(\@C);
@@ -269,9 +525,9 @@ sub mul {
 
     my @c;
 
-    my $a_rows = $#{$A};
-    my $b_rows = $#{$B};
-    my $b_cols = $#{$B->[0]};
+    my $a_rows = $m1->{rows};
+    my $b_rows = $m2->{rows};
+    my $b_cols = $m2->{cols};
 
     foreach my $i (0 .. $a_rows) {
         foreach my $j (0 .. $b_cols) {
@@ -378,7 +634,7 @@ sub pow {
     my $neg = ($pow < 0);
     $pow = CORE::int(CORE::abs($pow));
 
-    my $B = Math::MatrixLUP::identity(scalar @{$A->{A}});
+    my $B = Math::MatrixLUP::identity($A->{rows} + 1);
 
     return $B if ($pow == 0);
 
@@ -393,6 +649,10 @@ sub pow {
 
 sub solve {
     my ($self, $vector) = @_;
+
+    $self->{is_square}           or _croak('solve(): not a square matrix');
+    ref($vector) eq 'ARRAY'      or _croak('solve(): the vector must be an ARRAY ref');
+    $#{$vector} == $self->{rows} or _croak('solve(): length(vector) != length(matrix)');
 
     my ($N, $A, $P) = @{$self->decompose};
 
@@ -416,6 +676,8 @@ sub solve {
 
 sub invert {
     my ($self) = @_;
+
+    $self->{is_square} or _croak('invert(): not a square matrix');
 
     my ($N, $A, $P) = @{$self->decompose};
 
@@ -448,6 +710,8 @@ sub invert {
 
 sub determinant {
     my ($self) = @_;
+
+    $self->{is_square} or _croak('determinant(): not a square matrix');
 
     my ($N, $A, $P) = @{$self->decompose};
 
