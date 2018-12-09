@@ -9,6 +9,7 @@ our $VERSION = '0.01';
 use overload
   '""'  => \&stringify,
   'neg' => \&neg,
+  '@{}' => sub { $_[0]->{A} },
 
   '==' => \&eq,
   '!=' => \&ne,
@@ -40,6 +41,10 @@ sub _croak {
 sub new {
     my ($class, $matrix) = @_;
 
+    if (ref($matrix) eq 'ARRAY') {
+        $matrix = [[]] if !@$matrix;
+    }
+
     (ref($matrix) eq 'ARRAY' and ref($matrix->[0]) eq 'ARRAY')
       or _croak("Math::MatrixLUP->new(): invalid argument (expected a 2D array)");
 
@@ -51,6 +56,27 @@ sub new {
 
     $obj->{is_square} = ($obj->{rows} == $obj->{cols});
     $obj;
+}
+
+sub build {
+    my (undef, $rows, $cols, $callback) = @_;
+
+    if (!defined($callback)) {
+        $callback = $cols;
+        $cols     = $rows;
+    }
+
+    $rows -= 1;
+    $cols -= 1;
+
+    __PACKAGE__->new(
+        [
+         map {
+             my $i = $_;
+             [map { $callback->($i, $_) } 0 .. $cols];
+           } 0 .. $rows
+        ]
+    );
 }
 
 sub identity {
@@ -736,6 +762,7 @@ sub solve {
 sub invert {
     my ($self) = @_;
 
+    $self->{cols} == -1 and return __PACKAGE__->new([[]]);
     $self->{is_square} or _croak('invert(): not a square matrix');
 
     my ($N, $A, $P) = @{$self->decompose};
@@ -770,6 +797,7 @@ sub invert {
 sub determinant {
     my ($self) = @_;
 
+    $self->{cols} == -1 and return 1;
     $self->{is_square} or _croak('determinant(): not a square matrix');
 
     my ($N, $A, $P) = @{$self->decompose};

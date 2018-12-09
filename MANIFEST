@@ -1,5 +1,7 @@
 Build.PL
 Changes
+examples/bernoulli_numbers_from_pascal_triangle.pl
+examples/faulhaber_coefficients.pl
 examples/polynomial_iterpolation.pl
 examples/solve_a_system_of_linear_equations.pl
 ignore.txt
