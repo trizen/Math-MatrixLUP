@@ -135,6 +135,41 @@ sub diagonal {
     __PACKAGE__->new([map { [(0) x ($_ - 1), shift(@diag), (0) x ($n - $_)] } 1 .. $n]);
 }
 
+sub set_column {
+    my ($self, $i, $vector) = @_;
+
+    ref($vector) eq 'ARRAY'
+      or _croak("set_column(): the vector must be an ARRAY ref");
+
+    $#{$vector} == $self->{rows}
+        or _croak("set_column(): length(vector) != length(matrix)");
+
+    my $clone = $self->clone;
+    my $A = $clone->{A};
+
+    foreach my $j (0 .. $#{$vector}) {
+        $A->[$j][$i] = $vector->[$j];
+    }
+
+    $clone;
+}
+
+*set_col = \&set_column;
+
+sub set_row {
+    my ($self, $i, $vector) = @_;
+
+    ref($vector) eq 'ARRAY'
+      or _croak("set_row(): the vector must be an ARRAY ref");
+
+    $#{$vector} == $self->{cols}
+        or _croak("set_row(): length(vector) != length(matrix)");
+
+    my $clone = $self->clone;
+    $clone->{A}[$i] = $vector;
+    $clone;
+}
+
 sub scalar {
     my (undef, $n, $value) = @_;
     __PACKAGE__->new([map { [(0) x ($_ - 1), $value, (0) x ($n - $_)] } 1 .. $n]);

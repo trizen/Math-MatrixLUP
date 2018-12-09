@@ -20,19 +20,17 @@ The supported matrix operations are:
 ```perl
 use Math::MatrixLUP;
 
-my $A = [
+my $A = Math::MatrixLUP->new([
     [2, -1,  5,  1],
     [3,  2,  2, -6],
     [1,  3,  3, -1],
     [5, -2, -3,  3],
-];
+]);
 
-my $LUP = Math::MatrixLUP->new($A);
-
-my $det = $LUP->determinant;
-my $sol = $LUP->solve([-3, -32, -47, 49]);
-my $inv = $LUP->invert;
-my $exp = $LUP->pow(3);
+my $det = $A->determinant;
+my $sol = $A->solve([-3, -32, -47, 49]);
+my $inv = $A->invert;
+my $exp = $A->pow(3);
 ```
 
 # INSTALLATION
