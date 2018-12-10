@@ -128,7 +128,7 @@ If one of the arguments it not a B<Math::MatrixLUP> object, it does scalar subtr
 
 =head2 mul / scalar_mul
 
-Multiplication of two matrices.
+Multiplication of two matrices, where the number of columns in B<A> equals the number of rows in B<B>.
 
     my $C = $A * $B;
     my $C = $A->mul($B);

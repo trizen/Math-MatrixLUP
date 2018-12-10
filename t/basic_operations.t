@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Test::More;
 
-plan tests => 41;
+plan tests => 42;
 
 use Math::MatrixLUP;
 
@@ -13,15 +13,22 @@ use Math::MatrixLUP;
 
 #<<<
     my $A = Math::MatrixLUP->new([
-        [1, 1, 1, 1],
-        [2, 4, 8, 16],
-        [3, 9, 27, 81],
-        [4, 16, 64, 256],
+        [1,  1,   1,   1],
+        [2,  4,   8,  16],
+        [3,  9,  27,  81],
+        [4, 16,  64, 256],
         [5, 25, 125, 625],
     ]);
 #>>>
 
-    is_deeply($A->transpose->as_array, [[1, 2, 3, 4, 5], [1, 4, 9, 16, 25], [1, 8, 27, 64, 125], [1, 16, 81, 256, 625],]);
+#<<<
+    is_deeply($A->transpose->as_array, [
+        [1,  2,  3,   4,   5],
+        [1,  4,  9,  16,  25],
+        [1,  8, 27,  64, 125],
+        [1, 16, 81, 256, 625],
+    ]);
+#>>>
 }
 
 {
@@ -49,12 +56,12 @@ use Math::MatrixLUP;
           [1, 2],
           [3, 4],
           [5, 6],
-          [7, 8]
+          [7, 8],
     ]);
 
     my $B = Math::MatrixLUP->new([
           [1, 2, 3],
-          [4, 5, 6]
+          [4, 5, 6],
     ]);
 
     is_deeply($A->mul($B)->as_array, [
@@ -160,4 +167,24 @@ use Math::MatrixLUP;
     is_deeply(($A / $B)->as_array,  []);
     is_deeply(($A**3)->as_array,    []);
     is_deeply(($A**(-1))->as_array, []);
+}
+
+{
+    my $A = Math::MatrixLUP->build(
+        5, 6,
+        sub {
+            my ($i, $j) = @_;
+            $i**$j;
+        }
+    );
+
+#<<<
+    is_deeply($A->as_array, [
+        [1, 0,  0,  0,   0,    0],
+        [1, 1,  1,  1,   1,    1],
+        [1, 2,  4,  8,  16,   32],
+        [1, 3,  9, 27,  81,  243],
+        [1, 4, 16, 64, 256, 1024],
+    ]);
+#>>>
 }

@@ -750,6 +750,9 @@ sub mul {
     my $b_rows = $m2->{rows};
     my $b_cols = $m2->{cols};
 
+    $m1->{cols} == $m2->{rows}
+      or _croak("mul(): number of columns in A != number of rows in B");
+
     foreach my $i (0 .. $a_rows) {
         foreach my $j (0 .. $b_cols) {
             foreach my $k (0 .. $b_rows) {
