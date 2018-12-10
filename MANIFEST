@@ -16,8 +16,17 @@ META.yml
 r.pl
 README.md
 t/00-load.t
+t/basic_operations.t
+t/basic_operations_anynum.t
+t/bernoulli_numbers_from_pascal_triangle.t
+t/cramer_rule.t
+t/faulhaber_coefficients.t
 t/manifest.t
+t/pascal_bernoulli_numbers.t
 t/pod-coverage.t
 t/pod.t
+t/polynomial_interpolation.t
+t/row_echelon_form.t
+t/row_echelon_form_anynum.t
 utils/auto_perltidy.sh
 utils/bak_cleaner.sh

@@ -7,7 +7,7 @@ use Test::More;
 plan tests => 1;
 
 BEGIN {
-    use_ok( 'Math::MatrixLUP' ) || print "Bail out!\n";
+    use_ok('Math::MatrixLUP') || print "Bail out!\n";
 }
 
-diag( "Testing Math::MatrixLUP $Math::MatrixLUP::VERSION, Perl $], $^X" );
+diag("Testing Math::MatrixLUP $Math::MatrixLUP::VERSION, Perl $], $^X");

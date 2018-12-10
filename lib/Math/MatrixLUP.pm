@@ -19,8 +19,8 @@ use overload
   '^' => \&xor,
   '~' => \&transpose,
 
-  '>>' => \&rsft,
-  '<<' => \&lsft,
+  '>>' => sub { @_ = ($_[1], $_[0]) if $_[2]; goto &rsft },
+  '<<' => sub { @_ = ($_[1], $_[0]) if $_[2]; goto &lsft },
 
   '+' => \&add,
   '*' => \&mul,
@@ -178,9 +178,14 @@ sub scalar {
     __PACKAGE__->new([map { [(0) x ($_ - 1), $value, (0) x ($n - $_)] } 1 .. $n]);
 }
 
-sub size {
+sub as_array {
     my ($self) = @_;
-    ($self->{rows}, $self->{cols});
+    $self->{A};
+}
+
+sub get_size {
+    my ($self) = @_;
+    ($self->{rows} + 1, $self->{cols} + 1);
 }
 
 sub get_rows {
@@ -243,7 +248,60 @@ sub _LUP_decomposition {
 
 sub decompose {
     my ($self) = @_;
-    $self->{_decomposed} //= $self->_LUP_decomposition;
+    $self->{_decomposition} //= $self->_LUP_decomposition;
+}
+
+# Reduced row echelon form
+
+sub rref {
+    my ($self) = @_;
+    $self->{_rref} //= do {
+
+        my @m = map { [@$_] } @{$self->{A}};
+
+        @m || return __PACKAGE__->new([]);
+
+        my ($j, $rows, $cols) = (0, $self->{rows} + 1, $self->{cols} + 1);
+
+      OUTER: foreach my $r (0 .. $rows - 1) {
+
+            $j < $cols or last;
+
+            my $i = $r;
+
+            while ($m[$i][$j] == 0) {
+                ++$i == $rows or next;
+                $i = $r;
+                ++$j == $cols and last OUTER;
+            }
+
+            @m[$i, $r] = @m[$r, $i];
+
+            my $mr  = $m[$r];
+            my $mrj = $mr->[$j];
+
+            foreach my $k (0 .. $cols - 1) {
+                $mr->[$k] /= $mrj;
+            }
+
+            foreach my $i (0 .. $rows - 1) {
+
+                $i == $r and next;
+
+                my $mr  = $m[$r];
+                my $mi  = $m[$i];
+                my $mij = $m[$i][$j];
+
+                foreach my $k (0 .. $cols - 1) {
+                    $mi->[$k] -= $mij * $mr->[$k];
+                }
+            }
+
+            ++$j;
+        }
+
+        __PACKAGE__->new(\@m);
+    };
 }
 
 sub clone {
@@ -289,15 +347,34 @@ sub transpose {
     );
 }
 
+sub concat {
+    my ($m1, $m2) = @_;
+
+    ref($m1) eq ref($m2)
+      or _croak("concat(): expected a Matrix::LUP argument");
+
+    $m1->{rows} == $m2->{rows}
+      or _croak("concat(): matrices do not have the same row count");
+
+    my $A = $m1->{A};
+    my $B = $m2->{A};
+
+    my @C;
+
+    foreach my $i (0 .. $m1->{rows}) {
+        push @C, [@{$A->[$i]}, @{$B->[$i]}];
+    }
+
+    __PACKAGE__->new(\@C);
+}
+
 sub horizontal_flip {
     my ($self) = @_;
-
     __PACKAGE__->new([map { [reverse(@$_)] } @{$self->{A}}]);
 }
 
 sub vertical_flip {
     my ($self) = @_;
-
     __PACKAGE__->new([reverse @{$self->{A}}]);
 }
 
@@ -431,12 +508,17 @@ sub neg {
 sub map {
     my ($matrix, $callback) = @_;
 
+    my $A    = $matrix->{A};
+    my $rows = $matrix->{rows};
+    my $cols = $matrix->{cols};
+
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $i (0 .. $rows) {
         my @map;
-        foreach my $elem (@$row) {
-            local $_ = $elem;
-            push @map, $callback->($elem);
+        my $Ai = $A->[$i];
+        foreach my $j (0 .. $cols) {
+            local $_ = $Ai->[$j];
+            push @map, $callback->($i, $j);
         }
         push @B, \@map;
     }
@@ -562,7 +644,7 @@ sub xor {
     my ($m1, $m2) = @_;
 
     if (ref($m2) ne ref($m1)) {
-        return $m1->scalar_or($m2);
+        return $m1->scalar_xor($m2);
     }
 
     my $A = $m1->{A};
@@ -587,8 +669,16 @@ sub xor {
 sub lsft {
     my ($m1, $m2) = @_;
 
-    if (ref($m2) ne ref($m1)) {
-        return $m1->scalar_lsft($m2);
+    my $r1 = ref($m1);
+    my $r2 = ref($m2);
+
+    if ($r1 ne $r2) {
+
+        if ($r1 eq __PACKAGE__) {
+            return $m1->scalar_lsft($m2);
+        }
+
+        _croak("lsft(): invalid argument");
     }
 
     my $A = $m1->{A};
@@ -613,8 +703,16 @@ sub lsft {
 sub rsft {
     my ($m1, $m2) = @_;
 
-    if (ref($m2) ne ref($m1)) {
-        return $m1->scalar_rsft($m2);
+    my $r1 = ref($m1);
+    my $r2 = ref($m2);
+
+    if ($r1 ne $r2) {
+
+        if ($r1 eq __PACKAGE__) {
+            return $m1->scalar_rsft($m2);
+        }
+
+        _croak("rsft(): invalid argument");
     }
 
     my $A = $m1->{A};
@@ -802,31 +900,33 @@ sub invert {
 
     $self->{is_square} or _croak('invert(): not a square matrix');
 
-    my ($N, $A, $P) = @{$self->decompose};
+    $self->{_inverse} //= do {
+        my ($N, $A, $P) = @{$self->decompose};
 
-    my @I;
+        my @I;
 
-    foreach my $j (0 .. $N) {
-        foreach my $i (0 .. $N) {
+        foreach my $j (0 .. $N) {
+            foreach my $i (0 .. $N) {
 
-            $I[$i][$j] = ($P->[$i] == $j) ? 1 : 0;
+                $I[$i][$j] = ($P->[$i] == $j) ? 1 : 0;
 
-            foreach my $k (0 .. $i - 1) {
-                $I[$i][$j] -= $A->[$i][$k] * $I[$k][$j];
+                foreach my $k (0 .. $i - 1) {
+                    $I[$i][$j] -= $A->[$i][$k] * $I[$k][$j];
+                }
+            }
+
+            for (my $i = $N ; $i >= 0 ; --$i) {
+
+                foreach my $k ($i + 1 .. $N) {
+                    $I[$i][$j] -= $A->[$i][$k] * $I[$k][$j];
+                }
+
+                $I[$i][$j] /= $A->[$i][$i] // return __PACKAGE__->new([]);
             }
         }
 
-        for (my $i = $N ; $i >= 0 ; --$i) {
-
-            foreach my $k ($i + 1 .. $N) {
-                $I[$i][$j] -= $A->[$i][$k] * $I[$k][$j];
-            }
-
-            $I[$i][$j] /= $A->[$i][$i] // return __PACKAGE__->new([]);
-        }
-    }
-
-    __PACKAGE__->new(\@I);
+        __PACKAGE__->new(\@I);
+    };
 }
 
 *inv = \&invert;
@@ -836,26 +936,29 @@ sub determinant {
 
     $self->{is_square} or _croak('determinant(): not a square matrix');
 
-    my ($N, $A, $P) = @{$self->decompose};
+    $self->{_determinant} //= do {
+        my ($N, $A, $P) = @{$self->decompose};
 
-    my $det = $A->[0][0] // return 1;
+        my $det = $A->[0][0] // return 1;
 
-    foreach my $i (1 .. $N) {
-        $det *= $A->[$i][$i];
-    }
+        foreach my $i (1 .. $N) {
+            $det *= $A->[$i][$i];
+        }
 
-    if (($P->[$N + 1] - $N) % 2 == 0) {
-        $det *= -1;
-    }
+        if (($P->[$N + 1] - $N) % 2 == 0) {
+            $det *= -1;
+        }
 
-    $det;
+        $det;
+    };
 }
 
 *det = \&determinant;
 
 sub stringify {
     my ($self) = @_;
-    "[\n  " . join(",\n  ", map { "[" . join(", ", @$_) . "]" } @{$self->{A}}) . "\n]";
+    $self->{_stringification} //=
+      "[\n  " . join(",\n  ", map { "[" . join(", ", @$_) . "]" } @{$self->{A}}) . "\n]";
 }
 
 1;    # End of Math::MatrixLUP
