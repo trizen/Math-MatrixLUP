@@ -41,21 +41,26 @@ sub _croak {
 sub new {
     my ($class, $matrix) = @_;
 
-    if (ref($matrix) eq 'ARRAY') {
-        $matrix = [[]] if !@$matrix;
+    my ($rows, $cols);
+
+    if (ref($matrix) eq 'ARRAY' and !@$matrix) {
+        $rows = -1;
+        $cols = -1;
+    }
+    else {
+        (ref($matrix) eq 'ARRAY' and ref($matrix->[0]) eq 'ARRAY')
+          or _croak("Math::MatrixLUP->new(): invalid argument (expected a 2D array)");
     }
 
-    (ref($matrix) eq 'ARRAY' and ref($matrix->[0]) eq 'ARRAY')
-      or _croak("Math::MatrixLUP->new(): invalid argument (expected a 2D array)");
+    $rows //= $#{$matrix};
+    $cols //= $#{$matrix->[0]};
 
-    my $obj = bless {
-                     A    => $matrix,
-                     rows => $#{$matrix},
-                     cols => $#{$matrix->[0]},
-                    }, $class;
-
-    $obj->{is_square} = ($obj->{rows} == $obj->{cols});
-    $obj;
+    bless {
+           A         => $matrix,
+           rows      => $rows,
+           cols      => $cols,
+           is_square => ($rows == $cols),
+          }, $class;
 }
 
 sub build {
@@ -83,7 +88,7 @@ sub identity {
     my $n = $_[-1];
 
     if ($n <= 0) {
-        return __PACKAGE__->new([[]]);
+        return __PACKAGE__->new([]);
     }
 
     __PACKAGE__->new([map { [(0) x ($_ - 1), 1, (0) x ($n - $_)] } 1 .. $n]);
@@ -97,13 +102,11 @@ sub zero {
     $col_count //= $row_count;
 
     if ($row_count <= 0) {
-        return __PACKAGE__->new([[]]);
+        return __PACKAGE__->new([]);
     }
 
     __PACKAGE__->new([map { [(0) x $col_count] } 1 .. $row_count]);
 }
-
-*I = \&identity;
 
 sub column_vector {
     my (undef, $vector) = @_;
@@ -142,10 +145,10 @@ sub set_column {
       or _croak("set_column(): the vector must be an ARRAY ref");
 
     $#{$vector} == $self->{rows}
-        or _croak("set_column(): length(vector) != length(matrix)");
+      or _croak("set_column(): length(vector) != length(matrix)");
 
     my $clone = $self->clone;
-    my $A = $clone->{A};
+    my $A     = $clone->{A};
 
     foreach my $j (0 .. $#{$vector}) {
         $A->[$j][$i] = $vector->[$j];
@@ -163,7 +166,7 @@ sub set_row {
       or _croak("set_row(): the vector must be an ARRAY ref");
 
     $#{$vector} == $self->{cols}
-        or _croak("set_row(): length(vector) != length(matrix)");
+      or _croak("set_row(): length(vector) != length(matrix)");
 
     my $clone = $self->clone;
     $clone->{A}[$i] = $vector;
@@ -797,7 +800,6 @@ sub solve {
 sub invert {
     my ($self) = @_;
 
-    $self->{cols} == -1 and return __PACKAGE__->new([[]]);
     $self->{is_square} or _croak('invert(): not a square matrix');
 
     my ($N, $A, $P) = @{$self->decompose};
@@ -820,7 +822,7 @@ sub invert {
                 $I[$i][$j] -= $A->[$i][$k] * $I[$k][$j];
             }
 
-            $I[$i][$j] /= $A->[$i][$i] // return __PACKAGE__->new([[]]);
+            $I[$i][$j] /= $A->[$i][$i] // return __PACKAGE__->new([]);
         }
     }
 
@@ -832,7 +834,6 @@ sub invert {
 sub determinant {
     my ($self) = @_;
 
-    $self->{cols} == -1 and return 1;
     $self->{is_square} or _croak('determinant(): not a square matrix');
 
     my ($N, $A, $P) = @{$self->decompose};
