@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Test::More;
 
-plan tests => 70;
+plan tests => 85;
 
 use Math::MatrixLUP;
 
@@ -248,4 +248,49 @@ use Math::MatrixLUP;
         [44, 0, 0],
     ]);
 #>>>
+}
+
+{
+    my $A = Math::MatrixLUP->new([[1, 2, 3], [4, 5, 6]]);
+    my $B = Math::MatrixLUP->new([[1, 2, 3], [4, 5, 7]]);
+
+    ok($A < $B);
+    ok($B > $A);
+
+    ok(!($A > $B));
+    ok(!($B < $A));
+
+    ok($A <= $B);
+    ok($B >= $A);
+
+    ok(!($B <= $A));
+    ok(!($A >= $B));
+
+    ok($A >= $A);
+    ok($B <= $B);
+
+    is($A <=> $B, -1);
+    is($B <=> $A, 1);
+
+    ok($A != $B);
+    ok(!($A == $B));
+}
+
+{
+    my @M;
+    foreach my $n (0 .. 10) {
+
+        # Build a nXn Redheffer matrix
+        my $A = Math::MatrixLUP->build(
+            $n,
+            sub {
+                my ($i, $j) = @_;
+                ($j == 0 or ($j + 1) % ($i + 1) == 0) ? 1 : 0;
+            }
+        );
+
+        push @M, $A->det;
+    }
+
+    is(join(', ', @M), "1, 1, 0, -1, -1, -2, -1, -2, -2, -2, -1");    # Mertens function
 }

@@ -129,7 +129,7 @@ Add two matrices of the same dimensions:
     my $C = $A + $B;
     my $C = $A->add($B);
 
-If one of the arguments it not a B<Math::MatrixLUP> object, it does scalar addition:
+If one of the arguments it not a B<Math::MatrixLUP> object, scalar addition is performed:
 
     my $B = $A + $scalar;
     my $C = $A->scalar_add($scalar);
@@ -141,11 +141,7 @@ Subtract two matrices of the same dimensions:
     my $C = $A - $B;
     my $C = $A->sub($B);
 
-Defined as:
-
-    A/B = A + (-B)
-
-If one of the arguments it not a B<Math::MatrixLUP> object, it does scalar subtraction:
+If one of the arguments it not a B<Math::MatrixLUP> object, scalar subtraction is performed:
 
     my $B = $A - $scalar;
     my $C = $scalar - $A;
@@ -158,7 +154,7 @@ Multiplication of two matrices, where the number of columns in B<A> equals the n
     my $C = $A * $B;
     my $C = $A->mul($B);
 
-If one of the arguments it not a B<Math::MatrixLUP> object, it does scalar multiplication:
+If one of the arguments it not a B<Math::MatrixLUP> object, scalar multiplication is performed:
 
     my $B = $A * $scalar;
     my $C = $A->scalar_mul($scalar);
@@ -174,7 +170,7 @@ Defined as:
 
     A/B = A * B^(-1)
 
-If one of the arguments it not a B<Math::MatrixLUP> object, it does scalar division:
+If one of the arguments it not a B<Math::MatrixLUP> object, scalar division is performed:
 
     my $B = $A / $scalar;
     my $C = $scalar / $A;
@@ -196,11 +192,24 @@ Solve a system of linear equations.
 
 =head2 invert
 
-Invert a matrix.
+Invert a square matrix.
 
-=head2 equal
+=head2 eq / ne
 
-Decide if two matrices are equal.
+Decide if two matrices are equal or not.
+
+    $A == $B      # true if equal
+    $A != $B      # true if not equal
+
+=head2 lt / le / gt / ge / cmp
+
+Compare two matrices, entrywise:
+
+    $A  <  $B      # true if A is less than B
+    $A  <= $B      # true if A is less than or equal to B
+    $A  >  $B      # true if A is greater than B
+    $A  >= $B      # true if A is greater than or equal to B
+    $A <=> $B      # -1 if A < B, 0 if A == B, 1 if A > B
 
 =head2 diagonal_vector
 

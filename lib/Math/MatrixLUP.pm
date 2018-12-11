@@ -9,7 +9,8 @@ our $VERSION = '0.01';
 use overload
   '""'  => \&stringify,
   'neg' => \&neg,
-  '@{}' => sub { $_[0]->{A} },
+  'abs' => \&abs,
+  '@{}' => sub { $_[0]->{matrix} },
 
   '==' => \&eq,
   '!=' => \&ne,
@@ -68,7 +69,7 @@ sub new {
     $cols //= $#{$matrix->[0]};
 
     bless {
-           A         => $matrix,
+           matrix    => $matrix,
            rows      => $rows,
            cols      => $cols,
            is_square => ($rows == $cols),
@@ -184,7 +185,7 @@ sub diagonal {
 
     $self->{is_square} or _croak('diagonal(): not a square matrix');
 
-    my $A = $self->{A};
+    my $A = $self->{matrix};
     [map { $A->[$_][$_] } 0 .. $self->{rows}];
 }
 
@@ -195,7 +196,7 @@ sub anti_diagonal {
 
     $self->{is_square} or _croak('anti_diagonal(): not a square matrix');
 
-    my $A    = $self->{A};
+    my $A    = $self->{matrix};
     my $cols = $self->{cols};
 
     [map { $A->[$_][$cols - $_] } 0 .. $self->{rows}];
@@ -211,7 +212,7 @@ sub set_column {
       or _croak("set_column(): length(vector) != length(matrix)");
 
     my $clone = $self->clone;
-    my $A     = $clone->{A};
+    my $A     = $clone->{matrix};
 
     foreach my $j (0 .. $#{$vector}) {
         $A->[$j][$i] = $vector->[$j];
@@ -230,13 +231,13 @@ sub set_row {
       or _croak("set_row(): length(vector) != length(matrix)");
 
     my $clone = $self->clone;
-    $clone->{A}[$i] = $vector;
+    $clone->{matrix}[$i] = $vector;
     $clone;
 }
 
 sub as_array {
     my ($self) = @_;
-    $self->{A};
+    $self->{matrix};
 }
 
 sub size {
@@ -246,7 +247,7 @@ sub size {
 
 sub rows {
     my ($self) = @_;
-    @{$self->{A}};
+    @{$self->{matrix}};
 }
 
 sub columns {
@@ -262,8 +263,8 @@ sub eq {
     $m1->{rows} == $m2->{rows} or return 0;
     $m1->{cols} == $m2->{cols} or return 0;
 
-    my $A = $m1->{A};
-    my $B = $m2->{A};
+    my $A = $m1->{matrix};
+    my $B = $m2->{matrix};
 
     my $rows = $m1->{rows};
     my $cols = $m2->{cols};
@@ -287,8 +288,8 @@ sub cmp {
     ref($m1) eq ref($m2)
       or _croak("cmp(): can't compare different objects");
 
-    my $a1 = $m1->{A};
-    my $a2 = $m2->{A};
+    my $a1 = $m1->{matrix};
+    my $a2 = $m2->{matrix};
 
     my $r1 = $m1->{rows};
     my $r2 = $m2->{rows};
@@ -345,7 +346,7 @@ sub ne {
 sub _LUP_decomposition {
     my ($self) = @_;
 
-    my @A = map { [@$_] } @{$self->{A}};
+    my @A = map { [@$_] } @{$self->{matrix}};
     my $N = $self->{rows};
     my @P = (0 .. $N + 1);
 
@@ -399,7 +400,7 @@ sub rref {
     my ($self) = @_;
     $self->{_rref} //= do {
 
-        my @m = map { [@$_] } @{$self->{A}};
+        my @m = map { [@$_] } @{$self->{matrix}};
 
         @m || return __PACKAGE__->new([]);
 
@@ -448,13 +449,13 @@ sub rref {
 
 sub clone {
     my ($self) = @_;
-    __PACKAGE__->new([map { [@$_] } @{$self->{A}}]);
+    __PACKAGE__->new([map { [@$_] } @{$self->{matrix}}]);
 }
 
 sub transpose {
     my ($self) = @_;
 
-    my $A = $self->{A};
+    my $A = $self->{matrix};
 
     my $rows = $self->{rows};
     my $cols = $self->{cols};
@@ -478,8 +479,8 @@ sub concat {
     $m1->{rows} == $m2->{rows}
       or _croak("concat(): matrices do not have the same row count");
 
-    my $A = $m1->{A};
-    my $B = $m2->{A};
+    my $A = $m1->{matrix};
+    my $B = $m2->{matrix};
 
     my @C;
 
@@ -492,25 +493,25 @@ sub concat {
 
 sub horizontal_flip {
     my ($self) = @_;
-    __PACKAGE__->new([map { [reverse(@$_)] } @{$self->{A}}]);
+    __PACKAGE__->new([map { [reverse(@$_)] } @{$self->{matrix}}]);
 }
 
 sub vertical_flip {
     my ($self) = @_;
-    __PACKAGE__->new([reverse @{$self->{A}}]);
+    __PACKAGE__->new([reverse @{$self->{matrix}}]);
 }
 
 sub flip {
     my ($self) = @_;
 
-    __PACKAGE__->new([reverse map { [reverse(@$_)] } @{$self->{A}}]);
+    __PACKAGE__->new([reverse map { [reverse(@$_)] } @{$self->{matrix}}]);
 }
 
 sub scalar_mul {
     my ($matrix, $scalar) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { $_ * $scalar } @$row];
     }
 
@@ -521,7 +522,7 @@ sub scalar_add {
     my ($matrix, $scalar) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { $_ + $scalar } @$row];
     }
 
@@ -532,7 +533,7 @@ sub scalar_sub {
     my ($matrix, $scalar) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { $_ - $scalar } @$row];
     }
 
@@ -543,7 +544,7 @@ sub scalar_div {
     my ($matrix, $scalar) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { $_ / $scalar } @$row];
     }
 
@@ -554,7 +555,7 @@ sub scalar_mod {
     my ($matrix, $scalar) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { $_ % $scalar } @$row];
     }
 
@@ -565,7 +566,7 @@ sub scalar_and {
     my ($matrix, $scalar) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { $_ & $scalar } @$row];
     }
 
@@ -576,7 +577,7 @@ sub scalar_or {
     my ($matrix, $scalar) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { $_ | $scalar } @$row];
     }
 
@@ -587,7 +588,7 @@ sub scalar_xor {
     my ($matrix, $scalar) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { $_ ^ $scalar } @$row];
     }
 
@@ -598,7 +599,7 @@ sub scalar_lsft {
     my ($matrix, $scalar) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { $_ << $scalar } @$row];
     }
 
@@ -609,7 +610,7 @@ sub scalar_rsft {
     my ($matrix, $scalar) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { $_ >> $scalar } @$row];
     }
 
@@ -620,8 +621,19 @@ sub neg {
     my ($matrix) = @_;
 
     my @B;
-    foreach my $row (@{$matrix->{A}}) {
+    foreach my $row (@{$matrix->{matrix}}) {
         push @B, [map { -$_ } @$row];
+    }
+
+    __PACKAGE__->new(\@B);
+}
+
+sub abs {
+    my ($matrix) = @_;
+
+    my @B;
+    foreach my $row (@{$matrix->{matrix}}) {
+        push @B, [map { CORE::abs($_) } @$row];
     }
 
     __PACKAGE__->new(\@B);
@@ -630,7 +642,7 @@ sub neg {
 sub map {
     my ($matrix, $callback) = @_;
 
-    my $A    = $matrix->{A};
+    my $A    = $matrix->{matrix};
     my $rows = $matrix->{rows};
     my $cols = $matrix->{cols};
 
@@ -655,8 +667,8 @@ sub add {
         return $m1->scalar_add($m2);
     }
 
-    my $A = $m1->{A};
-    my $B = $m2->{A};
+    my $A = $m1->{matrix};
+    my $B = $m2->{matrix};
 
     my $rows = $m1->{rows};
     my $cols = $m1->{cols};
@@ -691,8 +703,8 @@ sub sub {
         }
     }
 
-    my $A = $m1->{A};
-    my $B = $m2->{A};
+    my $A = $m1->{matrix};
+    my $B = $m2->{matrix};
 
     my $rows = $m1->{rows};
     my $cols = $m2->{cols};
@@ -717,8 +729,8 @@ sub and {
         return $m1->scalar_and($m2);
     }
 
-    my $A = $m1->{A};
-    my $B = $m2->{A};
+    my $A = $m1->{matrix};
+    my $B = $m2->{matrix};
 
     my $rows = $m1->{rows};
     my $cols = $m2->{cols};
@@ -743,8 +755,8 @@ sub or {
         return $m1->scalar_or($m2);
     }
 
-    my $A = $m1->{A};
-    my $B = $m2->{A};
+    my $A = $m1->{matrix};
+    my $B = $m2->{matrix};
 
     my $rows = $m1->{rows};
     my $cols = $m1->{cols};
@@ -769,8 +781,8 @@ sub xor {
         return $m1->scalar_xor($m2);
     }
 
-    my $A = $m1->{A};
-    my $B = $m2->{A};
+    my $A = $m1->{matrix};
+    my $B = $m2->{matrix};
 
     my $rows = $m1->{rows};
     my $cols = $m1->{cols};
@@ -803,8 +815,8 @@ sub lsft {
         _croak("lsft(): invalid argument");
     }
 
-    my $A = $m1->{A};
-    my $B = $m2->{A};
+    my $A = $m1->{matrix};
+    my $B = $m2->{matrix};
 
     my $rows = $m1->{rows};
     my $cols = $m2->{cols};
@@ -837,8 +849,8 @@ sub rsft {
         _croak("rsft(): invalid argument");
     }
 
-    my $A = $m1->{A};
-    my $B = $m2->{A};
+    my $A = $m1->{matrix};
+    my $B = $m2->{matrix};
 
     my $rows = $m1->{rows};
     my $cols = $m1->{cols};
@@ -863,8 +875,8 @@ sub mul {
         return $m1->scalar_mul($m2);
     }
 
-    my $A = $m1->{A};
-    my $B = $m2->{A};
+    my $A = $m1->{matrix};
+    my $B = $m2->{matrix};
 
     my @c;
 
@@ -928,7 +940,7 @@ sub floor {
                   $t;
                 } @$_
              ]
-         } @{$self->{A}}
+         } @{$self->{matrix}}
         ]
     );
 }
@@ -946,7 +958,7 @@ sub ceil {
                   $t;
                 } @$_
              ]
-         } @{$self->{A}}
+         } @{$self->{matrix}}
         ]
     );
 }
@@ -1083,7 +1095,7 @@ sub determinant {
 sub stringify {
     my ($self) = @_;
     $self->{_stringification} //=
-      "[\n  " . join(",\n  ", map { "[" . join(", ", @$_) . "]" } @{$self->{A}}) . "\n]";
+      "[\n  " . join(",\n  ", map { "[" . join(", ", @$_) . "]" } @{$self->{matrix}}) . "\n]";
 }
 
 1;    # End of Math::MatrixLUP
