@@ -5,12 +5,11 @@ use strict;
 use warnings;
 use Test::More;
 
-plan tests => 42;
+plan tests => 70;
 
 use Math::MatrixLUP;
 
 {
-
 #<<<
     my $A = Math::MatrixLUP->new([
         [1,  1,   1,   1],
@@ -21,6 +20,8 @@ use Math::MatrixLUP;
     ]);
 #>>>
 
+    is($A->transpose, ~$A);
+
 #<<<
     is_deeply($A->transpose->as_array, [
         [1,  2,  3,   4,   5],
@@ -29,6 +30,9 @@ use Math::MatrixLUP;
         [1, 16, 81, 256, 625],
     ]);
 #>>>
+
+    is(~$A <=> $A,           1);
+    is($A <=> $A->transpose, -1);
 }
 
 {
@@ -42,6 +46,9 @@ use Math::MatrixLUP;
         [-3, -8, 3],
         [-2,  1, 4],
     ]);
+
+    ok($A != $B);
+    ok($B != $A);
 
     is_deeply(($A * $B)->as_array, [
         [-7,  -6,  11],
@@ -59,10 +66,31 @@ use Math::MatrixLUP;
           [7, 8],
     ]);
 
+    ok($A == $A);
+    is($A, $A);
+
     my $B = Math::MatrixLUP->new([
           [1, 2, 3],
           [4, 5, 6],
     ]);
+
+    is($A <=> $B, -1);
+    is($B <=> $A, 1);
+    is($A <=> $A, 0);
+    is($B <=> $B, 0);
+
+    ok($A < $B);
+    ok($B > $A);
+
+    ok(!($A > $B));
+    ok(!($B < $A));
+
+    ok(!($B <= $A));
+    ok(!($A >= $B));
+
+    ok($A <= $A);
+    ok($A <= $B);
+    ok($B >= $A);
 
     is_deeply($A->mul($B)->as_array, [
         [ 9,  12,  15],
@@ -116,6 +144,11 @@ use Math::MatrixLUP;
 {
     my $A = Math::MatrixLUP->new([[3, 1, 4], [1, 5, 9]]);
     my $B = Math::MatrixLUP->new([[2, 7, 1], [8, 2, 2]]);
+
+    ok($A == $A);
+    ok($B != $A);
+
+    ok(!($A == $B));
 
     is_deeply(($A + $B)->as_array, [[5, 8,  5], [9,  7, 11]]);
     is_deeply(($A - $B)->as_array, [[1, -6, 3], [-7, 3, 7]]);
@@ -178,6 +211,10 @@ use Math::MatrixLUP;
         }
     );
 
+    ok($A == $A);
+    ok(!($A != $A));
+    is($A <=> $A, 0);
+
 #<<<
     is_deeply($A->as_array, [
         [1, 0,  0,  0,   0,    0],
@@ -185,6 +222,30 @@ use Math::MatrixLUP;
         [1, 2,  4,  8,  16,   32],
         [1, 3,  9, 27,  81,  243],
         [1, 4, 16, 64, 256, 1024],
+    ]);
+#>>>
+}
+
+{
+    my $A = Math::MatrixLUP->diagonal([42, 43, 44]);
+
+#<<<
+    is_deeply($A->as_array, [
+        [42, 0, 0],
+        [0, 43, 0],
+        [0, 0, 44],
+    ]);
+#>>>
+}
+
+{
+    my $A = Math::MatrixLUP->anti_diagonal([42, 43, 44]);
+
+#<<<
+    is_deeply($A->as_array, [
+        [0, 0, 42],
+        [0, 43, 0],
+        [44, 0, 0],
     ]);
 #>>>
 }

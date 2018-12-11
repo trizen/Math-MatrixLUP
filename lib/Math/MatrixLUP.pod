@@ -32,13 +32,13 @@ The supported matrix operations are:
 
 =over 2
 
-=item * matrix-scalar arithmetical operation
+=item * matrix-scalar arithmetical operations
 
-=item * matrix multiplication
+=item * matrix multiplication and division
 
 =item * matrix exponentiation
 
-=item * computing the determinant of a square-matrix
+=item * determinant of a square-matrix
 
 =item * inverting a square-matrix
 
@@ -46,7 +46,9 @@ The supported matrix operations are:
 
 =back
 
-=head1 INITIALIZATION
+=head1 METHODS
+
+=head2 new
 
 Create a new B<Math::MatrixLUP> object, given a 2D array-ref:
 
@@ -55,6 +57,29 @@ Create a new B<Math::MatrixLUP> object, given a 2D array-ref:
                 [rand,rand,rand],
                 [rand,rand,rand],
         ]);
+
+=head2 identity / I
+
+Returns a nXn identity matrix, given an integer argument:
+
+    my $I = Math::MatrixLUP->I(3);
+    my $I = Math::MatrixLUP->identity(3);
+
+=head2 build
+
+Build a new nXm matrix, given two integers and a subroutine reference as arguments:
+
+    my $A = Math::MatrixLUP->build($n, $m, sub ($i, $j) {
+        $i * $j
+    });
+
+If only one integer is given, it creates a square nXn matrix:
+
+    my $B = Math::MatrixLUP->build($n, sub ($i, $j) {
+        $i**$j
+    });
+
+The values of C<i> (row number) and C<j> (column number) range from C<[0, n-1]> and C<[0, m-1]>.
 
 =head2 clone
 

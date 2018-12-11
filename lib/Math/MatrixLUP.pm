@@ -14,6 +14,18 @@ use overload
   '==' => \&eq,
   '!=' => \&ne,
 
+  '<'  => \&lt,
+  '>'  => \&gt,
+  '<=' => \&le,
+  '>=' => \&ge,
+
+  '<=>' => sub { $_[2] ? -(&cmp($_[0], $_[1]) // return undef) : &cmp($_[0], $_[1]) },
+
+  'eq' => sub { "$_[0]" eq "$_[1]" },
+  'ne' => sub { "$_[0]" ne "$_[1]" },
+
+  'cmp' => sub { $_[2] ? ("$_[1]" cmp $_[0]->stringify) : ($_[0]->stringify cmp "$_[1]") },
+
   '&' => \&and,
   '|' => \&or,
   '^' => \&xor,
@@ -126,7 +138,12 @@ sub row_vector {
     __PACKAGE__->new([$vector]);
 }
 
-sub diagonal {
+sub scalar {
+    my (undef, $n, $value) = @_;
+    __PACKAGE__->new([map { [(0) x ($_ - 1), $value, (0) x ($n - $_)] } 1 .. $n]);
+}
+
+sub _new_diagonal {
     my (undef, $vector) = @_;
 
     ref($vector) eq 'ARRAY'
@@ -136,6 +153,52 @@ sub diagonal {
     my $n    = scalar(@diag);
 
     __PACKAGE__->new([map { [(0) x ($_ - 1), shift(@diag), (0) x ($n - $_)] } 1 .. $n]);
+}
+
+sub _new_anti_diagonal {
+    my (undef, $vector) = @_;
+
+    ref($vector) eq 'ARRAY'
+      or _croak("anti_diagonal(): the vector must be an ARRAY ref");
+
+    my @diag = @$vector;
+    my $n    = scalar(@diag);
+
+    __PACKAGE__->new([map { [(0) x ($n - $_), shift(@diag), (0) x ($_ - 1)] } 1 .. $n]);
+}
+
+sub from_rows {
+    my (undef, @rows) = @_;
+    __PACKAGE__->new(\@rows);
+}
+
+sub from_columns {
+    my (undef, @columns) = @_;
+    __PACKAGE__->new(\@columns)->transpose;
+}
+
+sub diagonal {
+    my ($self) = @_;
+
+    ref($self) || goto &_new_diagonal;
+
+    $self->{is_square} or _croak('diagonal(): not a square matrix');
+
+    my $A = $self->{A};
+    [map { $A->[$_][$_] } 0 .. $self->{rows}];
+}
+
+sub anti_diagonal {
+    my ($self) = @_;
+
+    ref($self) || goto &_new_anti_diagonal;
+
+    $self->{is_square} or _croak('anti_diagonal(): not a square matrix');
+
+    my $A    = $self->{A};
+    my $cols = $self->{cols};
+
+    [map { $A->[$_][$cols - $_] } 0 .. $self->{rows}];
 }
 
 sub set_column {
@@ -157,8 +220,6 @@ sub set_column {
     $clone;
 }
 
-*set_col = \&set_column;
-
 sub set_row {
     my ($self, $i, $vector) = @_;
 
@@ -173,32 +234,113 @@ sub set_row {
     $clone;
 }
 
-sub scalar {
-    my (undef, $n, $value) = @_;
-    __PACKAGE__->new([map { [(0) x ($_ - 1), $value, (0) x ($n - $_)] } 1 .. $n]);
-}
-
 sub as_array {
     my ($self) = @_;
     $self->{A};
 }
 
-sub get_size {
+sub size {
     my ($self) = @_;
     ($self->{rows} + 1, $self->{cols} + 1);
 }
 
-sub get_rows {
+sub rows {
     my ($self) = @_;
     @{$self->{A}};
 }
 
-sub get_columns {
+sub columns {
     my ($self) = @_;
-    $self->transpose->get_rows;
+    $self->transpose->rows;
 }
 
-*cols = \&columns;
+sub eq {
+    my ($m1, $m2) = @_;
+
+    ref($m1) eq ref($m2) or return 0;
+
+    $m1->{rows} == $m2->{rows} or return 0;
+    $m1->{cols} == $m2->{cols} or return 0;
+
+    my $A = $m1->{A};
+    my $B = $m2->{A};
+
+    my $rows = $m1->{rows};
+    my $cols = $m2->{cols};
+
+    foreach my $i (0 .. $rows) {
+
+        my $Ai = $A->[$i];
+        my $Bi = $B->[$i];
+
+        foreach my $j (0 .. $cols) {
+            $Ai->[$j] == $Bi->[$j] or return 0;
+        }
+    }
+
+    return 1;
+}
+
+sub cmp {
+    my ($m1, $m2) = @_;
+
+    ref($m1) eq ref($m2)
+      or _croak("cmp(): can't compare different objects");
+
+    my $a1 = $m1->{A};
+    my $a2 = $m2->{A};
+
+    my $r1 = $m1->{rows};
+    my $r2 = $m2->{rows};
+
+    my $c1 = $m1->{cols};
+    my $c2 = $m2->{cols};
+
+    my $min_rows = $r1 < $r2 ? $r1 : $r2;
+    my $min_cols = $c1 < $c2 ? $c1 : $c2;
+
+    foreach my $i (0 .. $min_rows) {
+
+        my $Ai = $a1->[$i];
+        my $Bi = $a2->[$i];
+
+        foreach my $j (0 .. $min_cols) {
+            my $cmp = ($Ai->[$j] <=> $Bi->[$j]);
+            $cmp and return $cmp;
+        }
+
+        if ($c1 != $c2) {
+            return ($c1 <=> $c2);
+        }
+    }
+
+    $r1 <=> $r2;
+}
+
+sub lt {
+    my ($m1, $m2) = @_;
+    $m1->cmp($m2) < 0;
+}
+
+sub gt {
+    my ($m1, $m2) = @_;
+    $m1->cmp($m2) > 0;
+}
+
+sub le {
+    my ($m1, $m2) = @_;
+    $m1->cmp($m2) <= 0;
+}
+
+sub ge {
+    my ($m1, $m2) = @_;
+    $m1->cmp($m2) >= 0;
+}
+
+sub ne {
+    my ($m1, $m2) = @_;
+    !($m1->eq($m2));
+}
 
 sub _LUP_decomposition {
     my ($self) = @_;
@@ -307,26 +449,6 @@ sub rref {
 sub clone {
     my ($self) = @_;
     __PACKAGE__->new([map { [@$_] } @{$self->{A}}]);
-}
-
-sub get_diagonal {
-    my ($self) = @_;
-
-    $self->{is_square} or _croak('get_diagonal(): not a square matrix');
-
-    my $A = $self->{A};
-    [map { $A->[$_][$_] } 0 .. $self->{rows}];
-}
-
-sub get_anti_diagonal {
-    my ($self) = @_;
-
-    $self->{is_square} or _croak('get_anti_diagonal(): not a square matrix');
-
-    my $A    = $self->{A};
-    my $cols = $self->{cols};
-
-    [map { $A->[$_][$cols - $_] } 0 .. $self->{rows}];
 }
 
 sub transpose {

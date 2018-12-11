@@ -60,7 +60,7 @@ is_deeply([@{$C->rref}], [
 
 sub gauss_jordan_solve {
     my ($matrix, $column_vector) = @_;
-    [map { $_->[-1] } $matrix->concat($column_vector)->rref->get_rows];
+    [map { $_->[-1] } $matrix->concat($column_vector)->rref->rows];
 }
 
 {
@@ -94,7 +94,7 @@ sub gauss_jordan_invert {
     my $n = scalar(@$matrix);
     my $I = Math::MatrixLUP->identity($n);
 
-    Math::MatrixLUP->new([map { [@{$_}[$n .. $#{$_}]] } $matrix->concat($I)->rref->get_rows]);
+    Math::MatrixLUP->new([map { [@{$_}[$n .. $#{$_}]] } $matrix->concat($I)->rref->rows]);
 }
 
 {
