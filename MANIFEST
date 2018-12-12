@@ -26,6 +26,7 @@ t/pascal_bernoulli_numbers.t
 t/pod-coverage.t
 t/pod.t
 t/polynomial_interpolation.t
+t/polynomial_regression_anynum.t
 t/row_echelon_form.t
 t/row_echelon_form_anynum.t
 utils/auto_perltidy.sh
