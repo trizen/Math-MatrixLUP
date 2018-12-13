@@ -992,6 +992,8 @@ sub pow {
     my $neg = ($pow < 0);
     $pow = CORE::int(CORE::abs($pow));
 
+    return $A->inv if ($neg and $pow == 1);
+
     my $B = Math::MatrixLUP::identity($A->{rows} + 1);
 
     return $B if ($pow == 0);
