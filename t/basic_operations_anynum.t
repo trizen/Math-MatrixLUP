@@ -11,7 +11,7 @@ BEGIN {
       if $@;
 }
 
-plan tests => 36;
+plan tests => 38;
 
 use Math::MatrixLUP;
 use Math::AnyNum qw(:overload);
@@ -202,5 +202,75 @@ use Math::AnyNum qw(:overload);
     is_deeply(('42' - $A)->as_array, (-$A + 42)->as_array);
     is_deeply(('13' - $B)->as_array, (-$B + 13)->as_array);
     is_deeply(('-42' - $A)->as_array, ($A->neg - 42)->as_array);
+#>>>
+}
+
+{
+#<<<
+    my $A = Math::MatrixLUP->new([
+        [1, 1],
+        [1, 0],
+    ]);
+
+    my $mod = 123456789;
+
+    my $x1 = $A->powmod(10000000, $mod);
+    #~ my $x2 = $A->powmod(-10000000, $mod);
+
+    is_deeply($x1->as_array, [
+        [10217497, 90624903],
+        [90624903, 43049383],
+    ]);
+
+    #~ is_deeply($x2->as_array, [
+        #~ [43049383, 32831886],
+        #~ [32831886, 10217497],
+    #~ ]);
+
+    #~ my $r = (($x1*$x2) % $mod);
+
+    #~ is_deeply($r->as_array, [
+        #~ [1, 0],
+        #~ [0, 1],
+    #~ ]);
+
+    #~ is_deeply((($x2*$x1) % $mod)->as_array, $r->as_array);
+#>>>
+}
+
+{
+#<<<
+    my $A = Math::MatrixLUP->new([
+        [2, 9, 4],
+        [7, 5, 3],
+        [6, 1, 8],
+    ]);
+
+    my $mod = 1234567;
+
+    my $x1 = $A->powmod(42, $mod);
+    #~ my $x2 = $A->powmod(-42, $mod);
+
+    is_deeply($x1->as_array, [
+        [912772, 934000, 934000],
+        [934000, 912772, 934000],
+        [934000, 934000, 912772],
+    ]);
+
+    #~ is_deeply($x2->as_array, [
+        #~ [19620, 12234, 12234],
+        #~ [12234, 19620, 12234],
+        #~ [12234, 12234, 19620],
+    #~ ]);
+
+    #~ my $r = (($x1*$x2) % $mod);
+
+    #~ is_deeply($r->as_array, [
+        #~ [1, 0, 0],
+        #~ [0, 1, 0],
+        #~ [0, 0, 1],
+    #~ ]);
+
+    #~ is_deeply((($x2*$x1) % $mod)->as_array, $r->as_array);
 #>>>
 }

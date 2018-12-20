@@ -1000,11 +1000,30 @@ sub pow {
 
     while (1) {
         $B = $B->mul($A) if ($pow & 1);
-        $pow >>= 1 or last;
+        ($pow >>= 1) or last;
         $A = $A->mul($A);
     }
 
     $neg ? $B->inv : $B;
+}
+
+sub powmod {
+    my ($A, $pow, $mod) = @_;
+
+    $pow = CORE::int($pow);
+    $pow < 0 and _croak("powmod(): negative exponents are not supported yet");
+
+    my $B = Math::MatrixLUP::identity($A->{rows} + 1);
+
+    return $B->mod($mod) if ($pow == 0);
+
+    while (1) {
+        $B = $B->mul($A)->mod($mod) if ($pow & 1);
+        ($pow >>= 1) or last;
+        $A = $A->mul($A)->mod($mod);
+    }
+
+    $B->mod($mod);
 }
 
 sub solve {
