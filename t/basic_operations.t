@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Test::More;
 
-plan tests => 85;
+plan tests => 93;
 
 use Math::MatrixLUP;
 
@@ -109,6 +109,18 @@ use Math::MatrixLUP;
         [6, 1, 8],
     ]);
 #>>>
+
+    is_deeply($A->diagonal,      [2, 5, 8]);
+    is_deeply($A->anti_diagonal, [4, 5, 6]);
+
+    is_deeply($A->row(0),    [2, 9, 4]);
+    is_deeply($A->column(0), [2, 7, 6]);
+
+    is_deeply($A->row(1),    [7, 5, 3]);
+    is_deeply($A->column(1), [9, 5, 1]);
+
+    is_deeply($A->row(-1),    [6, 1, 8]);
+    is_deeply($A->column(-1), [4, 3, 8]);
 
     is($A->det, -360);
 }

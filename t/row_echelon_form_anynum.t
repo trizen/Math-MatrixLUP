@@ -76,7 +76,7 @@ sub gauss_jordan_solve {
         [1, 157/50, 987/100, 3101/100, 9741/100, 15301/50]
     ]);
 
-    my $vector = Math::MatrixLUP->column_vector([-1/100, 61/100, 91/100, 99/100, 3/5, 1/50]);
+    my $vector = Math::MatrixLUP->column([-1/100, 61/100, 91/100, 99/100, 3/5, 1/50]);
     my $solution = gauss_jordan_solve($A, $vector);
 
     is_deeply($solution, [

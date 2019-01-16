@@ -121,22 +121,38 @@ sub zero {
     __PACKAGE__->new([map { [(0) x $col_count] } 1 .. $row_count]);
 }
 
-sub column_vector {
+sub _column_vector {
     my (undef, $vector) = @_;
 
     ref($vector) eq 'ARRAY'
-      or _croak("column_vector(): the vector must be an ARRAY ref");
+      or _croak("column(): the vector must be an ARRAY ref");
 
     __PACKAGE__->new([map { [$_] } @$vector]);
 }
 
-sub row_vector {
+sub column {
+    my ($self, $n) = @_;
+
+    ref($self) || goto &_column_vector;
+
+    [map { $_->[$n] } @$self];
+}
+
+sub _row_vector {
     my (undef, $vector) = @_;
 
     ref($vector) eq 'ARRAY'
-      or _croak("row_vector(): the vector must be an ARRAY ref");
+      or _croak("row(): the vector must be an ARRAY ref");
 
     __PACKAGE__->new([$vector]);
+}
+
+sub row {
+    my ($self, $n) = @_;
+
+    ref($self) || goto &_row_vector;
+
+    [@{$self->[$n]}];
 }
 
 sub scalar {
@@ -503,7 +519,6 @@ sub vertical_flip {
 
 sub flip {
     my ($self) = @_;
-
     __PACKAGE__->new([reverse map { [reverse(@$_)] } @{$self->{matrix}}]);
 }
 

@@ -28,7 +28,7 @@ sub regress {
         }
     );
 
-    my $my = Math::MatrixLUP->column_vector($y);
+    my $my = Math::MatrixLUP->column($y);
 
     my $r1 = $mx->transpose->mul($mx)->invert->mul($mx->transpose)->mul($my)->transpose;
     my $r2 = ~((~$mx * $mx)**(-1) * ~$mx * $my);

@@ -11,6 +11,7 @@ Version 0.01
 =head1 SYNOPSIS
 
     use Math::MatrixLUP;
+    use Math::AnyNum qw(:overload);
 
     my $A = Math::MatrixLUP->new([
         [2, -1,  5,  1],
@@ -22,7 +23,9 @@ Version 0.01
     my $det = $A->determinant;
     my $sol = $A->solve([-3, -32, -47, 49]);
     my $inv = $A->invert;
-    my $exp = $A->pow(3);
+    my $pow = $A**3;
+    my $pwm = $A->powmod(100, 10000019);
+    my $mod = $A % 10007;
 
 =head1 DESCRIPTION
 
@@ -87,14 +90,49 @@ The matrix can be cloned by calling:
 
         my $B = $A->clone;
 
+=head2 row
+
+A constructor method that creates a row vector, given a single array-ref of numbers.
+
+    my $row_vector = Math::MatrixLUP->row([1, 4, 4, 8]);
+
+When called on a matrix object, it returns the n-th row (zero based) as an array-ref:
+
+    my $row = $A->row(0);     # first row as an array-ref
+
+=head2 column
+
+A constructor method that creates a column vector, given a single array-ref of numbers.
+
+    my $column_vector = Math::MatrixLUP->column([1, 4, 4, 8]);
+
+When called on a matrix object, it returns the n-th column (zero based) as an array-ref:
+
+    my $col = $A->column(0);  # first column as an array-ref
+
 =head2 diagonal
 
 A constructor method that creates a diagonal matrix from a single array-ref of numbers.
 
-        my $Q = Math::MatrixLUP->diagonal([1, 4, 4, 8]);
+        my $A = Math::MatrixLUP->diagonal([1, 4, 4, 8]);
 
-The matrix is zero filled except for the diagonal members, which take the
-value of the vector.
+The matrix is zero filled except for the diagonal, which take the value of the given vector.
+
+When called on a matrix object, it returns the diagonal as an array-ref:
+
+    my $diag = $A->diagonal;
+
+=head2 anti_diagonal
+
+A constructor method that creates an anti-diagonal matrix from a single array-ref of numbers.
+
+        my $A = Math::MatrixLUP->anti_diagonal([1, 4, 4, 8]);
+
+The matrix is zero filled except for the anti-diagonal, which take the value of the given vector.
+
+When called on a matrix object, it returns the anti-diagonal as an array-ref:
+
+    my $diag = $A->anti_diagonal;
 
 =head2 size
 
@@ -121,6 +159,13 @@ Returns the a new matrix with all the terms negated.
 
     my $B = -$A;
     my $B =  $A->neg;
+
+=head2 abs
+
+Returns the a new matrix with the absolute value of all terms.
+
+    my $B = abs($A);
+    my $B = $A->abs;
 
 =head2 add / scalar_add
 
@@ -211,15 +256,13 @@ Compare two matrices, entrywise:
     $A  >= $B      # true if A is greater than or equal to B
     $A <=> $B      # -1 if A < B, 0 if A == B, 1 if A > B
 
-=head2 diagonal_vector
-
-Extract the diagonal as an array:
-
-    my $diag = $A->diagonal_vector;
-
 =head2 determinant
 
 Compute the determinant of a square matrix.
+
+=head2 as_array
+
+Returns the matrix as a 2D array-ref.
 
 =head1 AUTHOR
 
@@ -276,7 +319,7 @@ L<Math::AnyNum> - Arbitrary size precision for integers, rationals, floating-poi
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2018 Daniel Șuteu.
+Copyright 2018-2019 Daniel Șuteu.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the the Artistic License (2.0). You may obtain a

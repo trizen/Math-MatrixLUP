@@ -10,18 +10,20 @@ use lib qw(../lib);
 use Math::MatrixLUP;
 use Math::AnyNum qw(:overload);
 
+#<<<
 my $A = Math::MatrixLUP->new([
     [2, -1,  5,  1],
     [3,  2,  2, -6],
     [1,  3,  3, -1],
     [5, -2, -3,  3],
 ]);
+#>>>
 
 my $solution = $A->solve([-3, -32, -47, 49]);
 
 say "Determinant: ", $A->det;
 say "Solution: [", join(', ', @$solution), "]\n";
-say $A * Math::MatrixLUP->column_vector($solution);
+say $A * Math::MatrixLUP->column($solution);
 
 print "\nA^(-1) = ";
 say $A->inv;

@@ -19,12 +19,12 @@ my $A = Math::MatrixLUP->new([
 #>>>
 
 my $vector        = [-3, -32, -47, 49];
-my $column_vector = Math::MatrixLUP->column_vector($vector);
+my $column_vector = Math::MatrixLUP->column($vector);
 
 my $B = $A->concat($column_vector);
 
 my $rref = $B->rref;
-my $res  = Math::MatrixLUP->identity(4)->concat(Math::MatrixLUP->column_vector([2, -12, -4, 1]));
+my $res  = Math::MatrixLUP->identity(4)->concat(Math::MatrixLUP->column([2, -12, -4, 1]));
 
 is_deeply([@$rref], [@$res]);
 
