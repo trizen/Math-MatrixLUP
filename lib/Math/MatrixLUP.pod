@@ -84,6 +84,26 @@ If only one integer is given, it creates a square nXn matrix:
 
 The values of C<i> (row number) and C<j> (column number) range from C<[0, n-1]> and C<[0, m-1]>.
 
+=head2 from_rows
+
+A construct method that creates a new matrix, given a list of array-ref rows:
+
+    my $A = Math::MatrixLUP->from_rows(
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+    );
+
+=head2 from_columns
+
+A construct method that creates a new matrix, given a list of array-ref columns:
+
+    my $A = Math::MatrixLUP->from_columns(
+        [1, 4, 7],
+        [2, 5, 8],
+        [3, 6, 9],
+    );
+
 =head2 clone
 
 The matrix can be cloned by calling:
@@ -96,9 +116,15 @@ A constructor method that creates a row vector, given a single array-ref of numb
 
     my $row_vector = Math::MatrixLUP->row([1, 4, 4, 8]);
 
-When called on a matrix object, it returns the n-th row (zero based) as an array-ref:
+When called on a matrix object, it returns the n-th row (zero-based) as an array-ref.
 
     my $row = $A->row(0);     # first row as an array-ref
+
+=head2 rows
+
+Returns the rows of the matrix as an array of array-refs.
+
+    my @rows = $A->rows;
 
 =head2 column
 
@@ -106,9 +132,15 @@ A constructor method that creates a column vector, given a single array-ref of n
 
     my $column_vector = Math::MatrixLUP->column([1, 4, 4, 8]);
 
-When called on a matrix object, it returns the n-th column (zero based) as an array-ref:
+When called on a matrix object, it returns the n-th column (zero-based) as an array-ref.
 
     my $col = $A->column(0);  # first column as an array-ref
+
+=head2 columns
+
+Returns the columns of the matrix as an array of array-refs.
+
+    my @columns = $A->columns;
 
 =head2 diagonal
 
@@ -155,17 +187,29 @@ rows of the argument matrix are swaped.
 
 =head2 neg
 
-Returns the a new matrix with all the terms negated.
+Returns a new matrix with all the terms negated.
 
     my $B = -$A;
     my $B =  $A->neg;
 
 =head2 abs
 
-Returns the a new matrix with the absolute value of all terms.
+Returns a new matrix with the C<abs()> function applied to all terms.
 
     my $B = abs($A);
     my $B = $A->abs;
+
+=head2 floor
+
+Returns a new matrix with the C<floor()> function applied to all terms.
+
+    my $B = $A->floor;
+
+=head2 ceil
+
+Returns a new matrix with the C<ceil()> function applied to all terms.
+
+    my $B = $A->ceil;
 
 =head2 add / scalar_add
 
