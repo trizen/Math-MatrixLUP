@@ -187,7 +187,7 @@ When called on a matrix object, it returns the anti-diagonal as an array-ref:
 
     my $diag = $A->anti_diagonal;
 
-=head1 * Arithmetic operations
+=head1 Arithmetic operations
 
 =head2 neg
 
@@ -298,7 +298,7 @@ Matrix exponentiation modulo C<m>, where the exponent is an arbitrary large posi
 
 Negative exponents are not supported yet.
 
-=head1 * Bitwise operations
+=head1 Bitwise operations
 
 This section includes method for scalar and entrywise matrix bitwise operations.
 
@@ -320,7 +320,7 @@ Entrywise bitwise operations:
     my $C = $A->xor($B);      # entrywise XOR
     my $C = $A->and($B);      # entrywise AND
 
-=head1 * Transformations
+=head1 Transformations
 
 =head2 flip
 
@@ -351,7 +351,7 @@ Map each entry of a matrix to a given subroutine callback.
 
 The subroutine is called with C<$i> and C<$j> as arguments, such that C<< $_ = $A->[$i][$j] >>.
 
-=head1 * Comparisons
+=head1 Comparisons
 
 =head2 eq / ne
 
@@ -370,7 +370,7 @@ Compare two matrices, entrywise:
     $A  >= $B      # true if A is greater than or equal to B
     $A <=> $B      # -1 if A < B, 0 if A == B, 1 if A > B
 
-=head1 * Linear algebra
+=head1 Linear algebra
 
 =head2 solve
 
@@ -410,7 +410,7 @@ Returns the LUP decomposition of the self matrix.
 
 There is no need to call this method explicitly. It is called internally automatically and is cached at object-level.
 
-=head1 * Other methods
+=head1 Other methods
 
 =head2 clone
 
