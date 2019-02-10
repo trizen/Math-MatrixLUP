@@ -42,26 +42,9 @@ To install this module, run the following commands:
     ./Build test
     ./Build install
 
-# SUPPORT AND DOCUMENTATION
+# METACPAN
 
-After installing, you can find documentation for this module with the
-perldoc command.
-
-    perldoc Math::MatrixLUP
-
-You can also look for information at:
-
-* Github
-    - https://github.com/trizen/Math-MatrixLUP
-
-* AnnoCPAN, Annotated CPAN documentation
-    - http://annocpan.org/dist/Math-MatrixLUP
-
-* CPAN Ratings
-    - http://cpanratings.perl.org/d/Math-MatrixLUP
-
-* Search CPAN
-    - http://search.cpan.org/dist/Math-MatrixLUP/
+https://metacpan.org/pod/Math::MatrixLUP
 
 # LICENSE AND COPYRIGHT
 
