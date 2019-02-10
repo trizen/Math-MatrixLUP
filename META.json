@@ -26,7 +26,7 @@
       },
       "runtime" : {
          "recommends" : {
-            "Math::AnyNum" : "0.20"
+            "Math::AnyNum" : "0.31"
          },
          "requires" : {
             "Carp" : "0",

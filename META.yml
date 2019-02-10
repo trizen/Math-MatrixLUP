@@ -18,7 +18,7 @@ provides:
     file: lib/Math/MatrixLUP.pm
     version: '0.01'
 recommends:
-  Math::AnyNum: '0.20'
+  Math::AnyNum: '0.31'
 requires:
   Carp: '0'
   perl: '5.010'

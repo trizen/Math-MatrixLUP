@@ -49,7 +49,7 @@ The following matrix operations are provided:
 
 =back
 
-Matrix objects are immutable.
+Matrix objects are B<immutable>.
 
 =head1 METHODS
 

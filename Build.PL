@@ -8,7 +8,7 @@ use Module::Build;
 my $builder = Module::Build->new(
     module_name         => 'Math::MatrixLUP',
     license             => 'artistic_2',
-    dist_author         => q{Daniel Șuteu <trizen@cpan.org>},
+    dist_author         => q<Daniel Șuteu <trizen@cpan.org>>,
     dist_version_from   => 'lib/Math/MatrixLUP.pm',
     release_status      => 'stable',
 
@@ -33,7 +33,7 @@ my $builder = Module::Build->new(
         Carp => 0,
     },
     recommends => {
-        'Math::AnyNum' => '0.20',
+        'Math::AnyNum' => '0.31',
     },
     add_to_cleanup     => [ 'Math-MatrixLUP-*' ],
     create_makefile_pl => 'traditional',
