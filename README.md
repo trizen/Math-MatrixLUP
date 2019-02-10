@@ -4,7 +4,7 @@ Math::MatrixLUP - Matrix operations and LUP decomposition.
 
 ## DESCRIPTION
 
-Math::MatrixLUP provides generic support for matrix operations and LUP decomposition, allowing any type of numbers inside the matrix, including native Perl numbers and numerical objects provided by other mathematical libraries, such as [Math::AnyNum](https://metacpan.org/pod/Math::AnyNum).
+[Math::MatrixLUP](https://metacpan.org/pod/Math::MatrixLUP) provides generic support for matrix operations and LUP decomposition, allowing any type of numbers inside the matrix, including native Perl numbers and numerical objects provided by other mathematical libraries, such as [Math::AnyNum](https://metacpan.org/pod/Math::AnyNum).
 
 The supported matrix operations are:
 
@@ -71,7 +71,7 @@ This program is free software; you can redistribute it and/or modify it
 under the terms of the the Artistic License (2.0). You may obtain a
 copy of the full license at:
 
-L<http://www.perlfoundation.org/artistic_license_2_0>
+http://www.perlfoundation.org/artistic_license_2_0
 
 Any use, modification, and distribution of the Standard or Modified
 Versions is governed by this Artistic License. By using, modifying or

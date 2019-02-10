@@ -31,7 +31,7 @@ Version 0.01
 
 Math::MatrixLUP provides generic support for matrix operations and LUP decomposition, allowing any type of numbers inside the matrix, including native Perl numbers and numerical objects provided by other mathematical libraries, such as L<Math::AnyNum>.
 
-The supported matrix operations are:
+The following matrix operations are provided:
 
 =over 2
 
@@ -48,6 +48,8 @@ The supported matrix operations are:
 =item * solving a system of linear equations
 
 =back
+
+Matrix objects are immutable.
 
 =head1 METHODS
 
@@ -430,43 +432,6 @@ Retruns a stringified version of the self-matrix.
 
 Returns the matrix as a 2D array-ref.
 
-=head1 AUTHOR
-
-Daniel Șuteu, C<< <trizen at cpan.org> >>
-
-=head1 BUGS
-
-Please report any bugs or feature requests at L<https://github.com/trizen/Math-MatrixLUP/issues>.
-I will be notified, and then you'll automatically be notified of progress on your bug as I make changes.
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc Math::MatrixLUP
-
-You can also look for information at:
-
-=over 4
-
-=item * GitHub
-
-L<https://github.com/trizen/Math-MatrixLUP>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Math-MatrixLUP>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Math-MatrixLUP>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Math-MatrixLUP/>
-
-=back
-
 =head1 SEE ALSO
 
 =over 4
@@ -483,45 +448,20 @@ L<Math::AnyNum> - Arbitrary size precision for integers, rationals, floating-poi
 
 =back
 
-=head1 LICENSE AND COPYRIGHT
+=head1 REPOSITORY
 
-Copyright 2019 Daniel Șuteu.
+L<https://github.com/trizen/Math-MatrixLUP>
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of the the Artistic License (2.0). You may obtain a
-copy of the full license at:
+=head1 AUTHOR
 
-L<http://www.perlfoundation.org/artistic_license_2_0>
+Daniel Șuteu, C<< <trizen at cpan.org> >>
 
-Any use, modification, and distribution of the Standard or Modified
-Versions is governed by this Artistic License. By using, modifying or
-distributing the Package, you accept this license. Do not use, modify,
-or distribute the Package, if you do not accept this license.
+=head1 COPYRIGHT AND LICENSE
 
-If your Modified Version has been derived from a Modified Version made
-by someone other than you, you are nevertheless required to ensure that
-your Modified Version complies with the requirements of this license.
+Copyright (C) 2019 Daniel Șuteu
 
-This license does not grant you the right to use any trademark, service
-mark, tradename, or logo of the Copyright Holder.
-
-This license includes the non-exclusive, worldwide, free-of-charge
-patent license to make, have made, use, offer to sell, sell, import and
-otherwise transfer the Package with respect to any patent claims
-licensable by the Copyright Holder that are necessarily infringed by the
-Package. If you institute patent litigation (including a cross-claim or
-counterclaim) against any party alleging that the Package constitutes
-direct or contributory patent infringement, then this Artistic License
-to you shall terminate on the date that such litigation is filed.
-
-Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
-AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
-THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY
-YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
-CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
-CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.22.0 or,
+at your option, any later version of Perl 5 you may have available.
 
 =cut
