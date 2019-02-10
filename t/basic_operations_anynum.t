@@ -11,7 +11,7 @@ BEGIN {
       if $@;
 }
 
-plan tests => 38;
+plan tests => 65;
 
 use Math::MatrixLUP;
 use Math::AnyNum qw(:overload);
@@ -273,4 +273,171 @@ use Math::AnyNum qw(:overload);
 
     #~ is_deeply((($x2*$x1) % $mod)->as_array, $r->as_array);
 #>>>
+}
+
+{
+    my $A = Math::MatrixLUP->new([
+        [2, -1,  5,  1],
+        [3,  2,  2, -6],
+        [1,  3,  3, -1],
+        [5, -2, -3,  3],
+    ]);
+
+    my $det = $A->determinant;                 # 684
+    my $sol = $A->solve([-3, -32, -47, 49]);   # [2, -12, -4, 1]
+    my $inv = $A->invert;
+
+    is($det, 684);
+    is_deeply($sol, [2, -12, -4, 1]);
+
+    is_deeply($inv->as_array, [
+        [4/171, 11/171, 10/171, 8/57],
+        [-55/342, -23/342, 119/342, 2/57],
+        [107/684, -5/684, 11/684, -7/114],
+        [7/684, -109/684, 103/684, 7/114]
+    ]);
+
+    is_deeply($A->mul($A)->as_array, [
+          [11, 9, 20, 6],
+          [-16, 19, 43, -29],
+          [9, 16, 23, -23],
+          [16, -24, 3, 29]
+    ]);
+
+    is_deeply($A->pow(3)->as_array, ($A*$A*$A)->as_array);
+
+    is_deeply(($A**3)->as_array, [
+        [99, 55, 115, -45],
+        [-77, 241, 174, -260],
+        [-26, 138, 215, -179],
+        [108, -113, -46, 244],
+    ]);
+
+    is_deeply($A->map(sub { 2*$_ })->as_array, [
+          [4, -2, 10, 2],
+          [6, 4, 4, -12],
+          [2, 6, 6, -2],
+          [10, -4, -6, 6]
+    ]);
+
+    is_deeply($A->transpose->as_array, [
+          [2, 3, 1, 5],
+          [-1, 2, 3, -2],
+          [5, 2, 3, -3],
+          [1, -6, -1, 3]
+    ]);
+
+    is_deeply(Math::MatrixLUP->new([[1,2,3,4]])->transpose->as_array, [
+        [1],
+        [2],
+        [3],
+        [4],
+    ]);
+
+    is_deeply($inv->floor->as_array, [
+          [0, 0, 0, 0],
+          [-1, -1, 0, 0],
+          [0, -1, 0, -1],
+          [0, -1, 0, 0]
+    ]);
+
+    is_deeply($inv->ceil->as_array, [
+          [1, 1, 1, 1],
+          [0, 0, 1, 1],
+          [1, 0, 1, 0],
+          [1, 0, 1, 1]
+    ]);
+
+    is_deeply($A->mod($A+1)->as_array, [
+          [10, -1, 10, 10],
+          [4, -1, 4, 4],
+          [9, -1, 9, 9],
+          [6, -1, 6, 6]
+    ]);
+
+    is_deeply(Math::MatrixLUP::mod(3, $A)->as_array, [
+        [2, 8, 4, 8],
+        [5, 1, 1, 5],
+        [6, 8, 0, 6],
+        [1, 1, 5, 0]
+    ]);
+
+    is_deeply(Math::MatrixLUP::mod(2, $A)->as_array, [
+          [1, 7, 2, 7],
+          [4, 0, 2, 4],
+          [5, 7, 2, 5],
+          [0, 0, 2, -1]
+    ]);
+
+
+    is_deeply(($A%2)->as_array, [
+          [0, 1, 1, 1],
+          [1, 0, 0, 0],
+          [1, 1, 1, 1],
+          [1, 0, 1, 1]
+    ]);
+
+    is_deeply(Math::MatrixLUP::div(4, $A)->as_array, ($A->inv * 4)->as_array);
+
+    is_deeply(Math::MatrixLUP::div(4, $A)->as_array, [
+          [16/171, 44/171, 40/171, 32/57],
+          [-110/171, -46/171, 238/171, 8/57],
+          [107/171, -5/171, 11/171, -14/57],
+          [7/171, -109/171, 103/171, 14/57]
+    ]);
+}
+
+{
+    is_deeply(Math::MatrixLUP->row([1,2,3,4])->as_array, [
+        [1,2,3,4]
+    ]);
+
+    is_deeply(Math::MatrixLUP->column([1,2,3,4])->as_array, [
+        [1],
+        [2],
+        [3],
+        [4],
+    ]);
+
+    is_deeply(Math::MatrixLUP->diagonal([1,2,3,4])->as_array, [
+          [1, 0, 0, 0],
+          [0, 2, 0, 0],
+          [0, 0, 3, 0],
+          [0, 0, 0, 4]
+    ]);
+
+    is_deeply(Math::MatrixLUP->scalar(4, 3)->as_array, [
+          [3, 0, 0, 0],
+          [0, 3, 0, 0],
+          [0, 0, 3, 0],
+          [0, 0, 0, 3]
+    ]);
+
+    is_deeply(Math::MatrixLUP->scalar(0, 42)->as_array, [ ]);
+
+    is_deeply(Math::MatrixLUP->zero(4, 3)->as_array, [
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]
+    ]);
+
+    is_deeply(Math::MatrixLUP->zero(4, 0)->as_array, [
+        [],
+        [],
+        [],
+        [],
+    ]);
+
+    is_deeply(Math::MatrixLUP->zero(0, 3)->as_array, [ ]);
+
+    is_deeply(Math::MatrixLUP::I(5)->as_array, [
+          [1, 0, 0, 0, 0],
+          [0, 1, 0, 0, 0],
+          [0, 0, 1, 0, 0],
+          [0, 0, 0, 1, 0],
+          [0, 0, 0, 0, 1]
+    ]);
+
+    is(Math::MatrixLUP->new([])->det, 1);
 }

@@ -247,7 +247,7 @@ sub set_row {
       or _croak("set_row(): length(vector) != length(matrix)");
 
     my $clone = $self->clone;
-    $clone->{matrix}[$i] = $vector;
+    $clone->{matrix}[$i] = [@{$vector}];
     $clone;
 }
 
@@ -407,7 +407,7 @@ sub _LUP_decomposition {
 
 sub decompose {
     my ($self) = @_;
-    $self->{_decomposition} //= $self->_LUP_decomposition;
+    @{$self->{_decomposition} //= $self->_LUP_decomposition};
 }
 
 # Reduced row echelon form
@@ -522,7 +522,7 @@ sub flip {
     __PACKAGE__->new([reverse map { [reverse(@$_)] } @{$self->{matrix}}]);
 }
 
-sub scalar_mul {
+sub _scalar_mul {
     my ($matrix, $scalar) = @_;
 
     my @B;
@@ -533,7 +533,7 @@ sub scalar_mul {
     __PACKAGE__->new(\@B);
 }
 
-sub scalar_add {
+sub _scalar_add {
     my ($matrix, $scalar) = @_;
 
     my @B;
@@ -544,7 +544,7 @@ sub scalar_add {
     __PACKAGE__->new(\@B);
 }
 
-sub scalar_sub {
+sub _scalar_sub {
     my ($matrix, $scalar) = @_;
 
     my @B;
@@ -555,7 +555,7 @@ sub scalar_sub {
     __PACKAGE__->new(\@B);
 }
 
-sub scalar_div {
+sub _scalar_div {
     my ($matrix, $scalar) = @_;
 
     my @B;
@@ -566,7 +566,7 @@ sub scalar_div {
     __PACKAGE__->new(\@B);
 }
 
-sub scalar_mod {
+sub _scalar_mod {
     my ($matrix, $scalar) = @_;
 
     my @B;
@@ -577,7 +577,7 @@ sub scalar_mod {
     __PACKAGE__->new(\@B);
 }
 
-sub scalar_and {
+sub _scalar_and {
     my ($matrix, $scalar) = @_;
 
     my @B;
@@ -588,7 +588,7 @@ sub scalar_and {
     __PACKAGE__->new(\@B);
 }
 
-sub scalar_or {
+sub _scalar_or {
     my ($matrix, $scalar) = @_;
 
     my @B;
@@ -599,7 +599,7 @@ sub scalar_or {
     __PACKAGE__->new(\@B);
 }
 
-sub scalar_xor {
+sub _scalar_xor {
     my ($matrix, $scalar) = @_;
 
     my @B;
@@ -610,7 +610,7 @@ sub scalar_xor {
     __PACKAGE__->new(\@B);
 }
 
-sub scalar_lsft {
+sub _scalar_lsft {
     my ($matrix, $scalar) = @_;
 
     my @B;
@@ -621,7 +621,7 @@ sub scalar_lsft {
     __PACKAGE__->new(\@B);
 }
 
-sub scalar_rsft {
+sub _scalar_rsft {
     my ($matrix, $scalar) = @_;
 
     my @B;
@@ -679,7 +679,7 @@ sub add {
     my ($m1, $m2) = @_;
 
     if (ref($m2) ne ref($m1)) {
-        return $m1->scalar_add($m2);
+        return $m1->_scalar_add($m2);
     }
 
     my $A = $m1->{matrix};
@@ -709,12 +709,12 @@ sub sub {
 
     if ($r1 ne $r2) {
         if ($r1 eq __PACKAGE__) {
-            return $m1->scalar_sub($m2);
+            return $m1->_scalar_sub($m2);
         }
 
         # a - b = -b + a
         if ($r2 eq __PACKAGE__) {
-            return $m2->neg->scalar_add($m1);
+            return $m2->neg->_scalar_add($m1);
         }
     }
 
@@ -741,7 +741,7 @@ sub and {
     my ($m1, $m2) = @_;
 
     if (ref($m2) ne ref($m1)) {
-        return $m1->scalar_and($m2);
+        return $m1->_scalar_and($m2);
     }
 
     my $A = $m1->{matrix};
@@ -767,7 +767,7 @@ sub or {
     my ($m1, $m2) = @_;
 
     if (ref($m2) ne ref($m1)) {
-        return $m1->scalar_or($m2);
+        return $m1->_scalar_or($m2);
     }
 
     my $A = $m1->{matrix};
@@ -793,7 +793,7 @@ sub xor {
     my ($m1, $m2) = @_;
 
     if (ref($m2) ne ref($m1)) {
-        return $m1->scalar_xor($m2);
+        return $m1->_scalar_xor($m2);
     }
 
     my $A = $m1->{matrix};
@@ -824,7 +824,7 @@ sub lsft {
     if ($r1 ne $r2) {
 
         if ($r1 eq __PACKAGE__) {
-            return $m1->scalar_lsft($m2);
+            return $m1->_scalar_lsft($m2);
         }
 
         _croak("lsft(): invalid argument");
@@ -858,7 +858,7 @@ sub rsft {
     if ($r1 ne $r2) {
 
         if ($r1 eq __PACKAGE__) {
-            return $m1->scalar_rsft($m2);
+            return $m1->_scalar_rsft($m2);
         }
 
         _croak("rsft(): invalid argument");
@@ -887,7 +887,7 @@ sub mul {
     my ($m1, $m2) = @_;
 
     if (ref($m2) ne ref($m1)) {
-        return $m1->scalar_mul($m2);
+        return $m1->_scalar_mul($m2);
     }
 
     my $A = $m1->{matrix};
@@ -930,12 +930,12 @@ sub div {
     if ($r1 ne $r2) {
 
         if ($r1 eq __PACKAGE__) {
-            return $m1->scalar_div($m2);
+            return $m1->_scalar_div($m2);
         }
 
         # A/B = A * B^(-1)
         if ($r2 eq __PACKAGE__) {
-            return $m2->inv->scalar_mul($m1);
+            return $m2->inv->_scalar_mul($m1);
         }
     }
 
@@ -987,12 +987,12 @@ sub mod {
     if ($r1 ne $r2) {
 
         if ($r1 eq __PACKAGE__) {
-            return $A->scalar_mod($B);
+            return $A->_scalar_mod($B);
         }
 
         # A - B*floor(A/B) = A - B*floor(A * B^(-1))
         if ($r2 eq __PACKAGE__) {
-            return Math::MatrixLUP::sub($A, $B->mul($B->inv->scalar_mul($A)->floor));
+            return Math::MatrixLUP::sub($A, $B->mul($B->inv->_scalar_mul($A)->floor));
         }
     }
 
@@ -1048,7 +1048,7 @@ sub solve {
     ref($vector) eq 'ARRAY'      or _croak('solve(): the vector must be an ARRAY ref');
     $#{$vector} == $self->{rows} or _croak('solve(): length(vector) != length(matrix)');
 
-    my ($N, $A, $P) = @{$self->decompose};
+    my ($N, $A, $P) = $self->decompose;
 
     my @x = map { $vector->[$P->[$_]] } 0 .. $N;
 
@@ -1074,7 +1074,7 @@ sub invert {
     $self->{is_square} or _croak('invert(): not a square matrix');
 
     $self->{_inverse} //= do {
-        my ($N, $A, $P) = @{$self->decompose};
+        my ($N, $A, $P) = $self->decompose;
 
         my @I;
 
@@ -1110,7 +1110,7 @@ sub determinant {
     $self->{is_square} or _croak('determinant(): not a square matrix');
 
     $self->{_determinant} //= do {
-        my ($N, $A, $P) = @{$self->decompose};
+        my ($N, $A, $P) = $self->decompose;
 
         my $det = $A->[0][0] // return 1;
 

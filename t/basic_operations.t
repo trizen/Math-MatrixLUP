@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Test::More;
 
-plan tests => 93;
+plan tests => 118;
 
 use Math::MatrixLUP;
 
@@ -66,6 +66,12 @@ use Math::MatrixLUP;
           [7, 8],
     ]);
 
+    do {
+      my ($row_size, $col_size) = $A->size;
+        is($row_size, 4);
+        is($col_size, 2);
+    };
+
     ok($A == $A);
     is($A, $A);
 
@@ -102,6 +108,161 @@ use Math::MatrixLUP;
 }
 
 {
+    my $A = Math::MatrixLUP->new([
+          [1, 2],
+          [3, 4],
+          [5, 6],
+          [7, 8],
+    ]);
+
+    is_deeply(($A+4)->as_array, [
+          [1+4, 2+4],
+          [3+4, 4+4],
+          [5+4, 6+4],
+          [7+4, 8+4],
+    ]);
+
+    is_deeply(($A-4)->as_array, [
+          [1-4, 2-4],
+          [3-4, 4-4],
+          [5-4, 6-4],
+          [7-4, 8-4],
+    ]);
+
+    is_deeply(($A*4)->as_array, [
+          [1*4, 2*4],
+          [3*4, 4*4],
+          [5*4, 6*4],
+          [7*4, 8*4],
+    ]);
+
+    is_deeply(($A/4)->as_array, [
+          [1/4, 2/4],
+          [3/4, 4/4],
+          [5/4, 6/4],
+          [7/4, 8/4],
+    ]);
+
+    is_deeply(($A%5)->as_array, [
+          [1%5, 2%5],
+          [3%5, 4%5],
+          [5%5, 6%5],
+          [7%5, 8%5],
+    ]);
+}
+
+{
+    my $A = Math::MatrixLUP->new([
+          [1, 2],
+          [3, 4],
+          [5, 6],
+          [7, 8],
+    ]);
+
+    is_deeply((4+$A)->as_array, [
+          [1+4, 2+4],
+          [3+4, 4+4],
+          [5+4, 6+4],
+          [7+4, 8+4],
+    ]);
+
+    is_deeply((4-$A)->as_array, [
+          [4-1, 4-2],
+          [4-3, 4-4],
+          [4-5, 4-6],
+          [4-7, 4-8],
+    ]);
+
+    is_deeply((4*$A)->as_array, [
+          [1*4, 2*4],
+          [3*4, 4*4],
+          [5*4, 6*4],
+          [7*4, 8*4],
+    ]);
+}
+
+{
+    my $A = Math::MatrixLUP->new([
+        [2, 9, 4],
+        [7, 5, 3],
+        [6, 1, 8],
+    ]);
+
+    is_deeply((4/$A)->as_array, (4 * $A**(-1))->as_array);
+    is_deeply((5%$A)->as_array, (5 - $A * (5/$A)->floor)->as_array);
+}
+
+{
+    my $A = Math::MatrixLUP->new([
+          [1, 2],
+          [-3, -4],
+          [5, -6],
+          [7, -8],
+    ]);
+
+    is_deeply(abs($A)->as_array, [
+          [1, 2],
+          [3, 4],
+          [5, 6],
+          [7, 8],
+    ]);
+}
+
+{
+    my $A = Math::MatrixLUP->new([
+          [2.3, -3.8],
+          [4.9, -2.3],
+          [1.2, 4],
+          [7.11, -9],
+    ]);
+
+    is_deeply($A->floor->as_array, [
+          [2, -4],
+          [4, -3],
+          [1, 4],
+          [7, -9],
+    ]);
+
+    is_deeply($A->ceil->as_array, [
+          [3, -3],
+          [5, -2],
+          [2, 4],
+          [8, -9],
+    ]);
+}
+
+
+{
+    my $A = Math::MatrixLUP->from_rows(
+          [1, 2],
+          [-3, -4],
+          [5, -6],
+          [7, -8],
+    );
+
+    is_deeply($A->as_array, [
+          [1, 2],
+          [-3, -4],
+          [5, -6],
+          [7, -8],
+    ]);
+}
+
+{
+    my $A = Math::MatrixLUP->from_columns(
+          [1, 2],
+          [-3, -4],
+          [5, -6],
+          [7, -8],
+    );
+
+    is_deeply($A->as_array, [
+        [1, -3, 5, 7],
+        [2, -4, -6, -8],
+    ]);
+}
+
+{
 #<<<
     my $A = Math::MatrixLUP->new([
         [2, 9, 4],
@@ -121,6 +282,17 @@ use Math::MatrixLUP;
 
     is_deeply($A->row(-1),    [6, 1, 8]);
     is_deeply($A->column(-1), [4, 3, 8]);
+
+    my @cols = $A->columns;
+    my @rows = $A->rows;
+
+    foreach my $i(0..$#cols) {
+        is_deeply($cols[$i], $A->column($i));
+    }
+
+    foreach my $i(0..$#rows) {
+        is_deeply($rows[$i], $A->row($i));
+    }
 
     is($A->det, -360);
 }
@@ -212,6 +384,15 @@ use Math::MatrixLUP;
     is_deeply(($A / $B)->as_array,  []);
     is_deeply(($A**3)->as_array,    []);
     is_deeply(($A**(-1))->as_array, []);
+}
+
+{
+    my $A = Math::MatrixLUP->new([]);
+
+    my ($row_size, $col_size) = $A->size;
+
+    is($row_size, 0);
+    is($col_size, 0);
 }
 
 {
