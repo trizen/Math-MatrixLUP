@@ -21,7 +21,6 @@ t/basic_operations_anynum.t
 t/bernoulli_numbers_from_pascal_triangle.t
 t/cramer_rule.t
 t/faulhaber_coefficients.t
-t/manifest.t
 t/pascal_bernoulli_numbers.t
 t/pod-coverage.t
 t/pod.t
