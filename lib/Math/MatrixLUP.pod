@@ -326,11 +326,11 @@ Entrywise bitwise operations:
 
 Returns a new matrix with rows and columns flipped.
 
-=head2 vertical_flip
+=head2 vflip / vertical_flip
 
 Returns a new matrix with rows flipped.
 
-=head2 horizontal_flip
+=head2 hflip / horizontal_flip
 
 Returns a new matrix with columns flipped.
 

@@ -512,10 +512,14 @@ sub horizontal_flip {
     __PACKAGE__->new([map { [reverse(@$_)] } @{$self->{matrix}}]);
 }
 
+*hflip = \&horizontal_flip;
+
 sub vertical_flip {
     my ($self) = @_;
     __PACKAGE__->new([reverse @{$self->{matrix}}]);
 }
+
+*vflip = \&vertical_flip;
 
 sub flip {
     my ($self) = @_;
