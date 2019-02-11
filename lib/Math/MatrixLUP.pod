@@ -443,10 +443,6 @@ at object-level in order to avoid recomputing the LUP decomposition multiple tim
 
 =head1 SEE ALSO
 
-=over 4
-
-=item * Related libraries
-
 L<Math::Matrix> - Multiply and invert matrices.
 
 L<Math::GSL::Matrix> - Mathematical functions concerning Matrices using the GNU Scientific Library (GSL).
@@ -454,8 +450,6 @@ L<Math::GSL::Matrix> - Mathematical functions concerning Matrices using the GNU 
 L<Math::MatrixDecomposition::LU> - LU decomposition with partial pivoting of a real matrix.
 
 L<Math::AnyNum> - Arbitrary size precision for integers, rationals, floating-points and complex numbers.
-
-=back
 
 =head1 REPOSITORY
 
