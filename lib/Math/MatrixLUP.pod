@@ -222,7 +222,7 @@ Add two matrices of the same dimensions:
     my $C = $A + $B;
     my $C = $A->add($B);
 
-If one of the arguments it not a B<Math::MatrixLUP> object, scalar addition is performed:
+If one of the arguments is not a B<Math::MatrixLUP> object, scalar addition is performed:
 
     my $B = $A + $scalar;
 
@@ -233,7 +233,7 @@ Subtract two matrices of the same dimensions:
     my $C = $A - $B;
     my $C = $A->sub($B);
 
-If one of the arguments it not a B<Math::MatrixLUP> object, scalar subtraction is performed:
+If one of the arguments is not a B<Math::MatrixLUP> object, scalar subtraction is performed:
 
     my $B = $A - $scalar;
     my $B = $scalar - $A;
@@ -245,7 +245,7 @@ Multiplication of two matrices, where the number of columns in B<A> equals the n
     my $C = $A * $B;
     my $C = $A->mul($B);
 
-If one of the arguments it not a B<Math::MatrixLUP> object, scalar multiplication is performed:
+If one of the arguments is not a B<Math::MatrixLUP> object, scalar multiplication is performed:
 
     my $B = $A * $scalar;
 
@@ -260,7 +260,7 @@ Defined as:
 
     A/B = A * B^(-1)
 
-If one of the arguments it not a B<Math::MatrixLUP> object, scalar division is performed:
+If one of the arguments is not a B<Math::MatrixLUP> object, scalar division is performed:
 
     my $B = $A / $scalar;
     my $B = $scalar / $A;
@@ -276,7 +276,7 @@ Defined as:
 
     A mod B = A - B*floor(A/B)
 
-If one of the arguments it not a B<Math::MatrixLUP> object, scalar modulo is performed:
+If one of the arguments is not a B<Math::MatrixLUP> object, scalar modulo is performed:
 
     my $B = $A % $scalar;
     my $B = $scalar % $A;
@@ -336,8 +336,7 @@ Returns a new matrix with columns flipped.
 
 =head2 transpose
 
-Returns the transposed matrix. This is the matrix where colums and
-rows of the argument matrix are swaped.
+Returns the transposed matrix. This is a new matrix where colums and rows of the self-matrix are swaped.
 
 =head2 concat
 
