@@ -336,7 +336,7 @@ Returns a new matrix with columns flipped.
 
 =head2 transpose
 
-Returns the transposed matrix. This is a new matrix where colums and rows of the self-matrix are swaped.
+Returns the transposed matrix. This is a new matrix where columns and rows of the self-matrix are swapped.
 
 =head2 concat
 
