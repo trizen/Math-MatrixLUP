@@ -12,6 +12,7 @@ my $builder = Module::Build->new(
     dist_version_from   => 'lib/Math/MatrixLUP.pm',
     release_status      => 'stable',
 
+    dynamic_config    => 0,
     extra_manify_args => { utf8 => 1 },
 
     meta_merge => {
