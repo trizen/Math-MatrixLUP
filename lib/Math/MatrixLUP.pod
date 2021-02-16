@@ -296,7 +296,7 @@ Matrix exponentiation modulo C<m>, where the exponent is an arbitrary large posi
 
     my $B = $A->powmod($n, $m);
 
-Negative exponents are not supported yet.
+For negative C<n>, this operation is defined only if the matrix can be inverted.
 
 =head1 * Bitwise operations
 
@@ -390,6 +390,12 @@ Solve a system of linear equations.
 Invert a square matrix.
 
     my $B = $A->inv;
+
+=head2 invmod
+
+Invert a square matrix modulo a positive integer.
+
+    my $B = $A->invmod($m);
 
 =head2 det / determinant
 
