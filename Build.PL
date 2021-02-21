@@ -34,7 +34,7 @@ my $builder = Module::Build->new(
         Carp => 0,
     },
     recommends => {
-        'Math::AnyNum' => '0.31',
+        'Math::AnyNum' => '0.38',
     },
     add_to_cleanup     => [ 'Math-MatrixLUP-*' ],
     create_makefile_pl => 'traditional',
